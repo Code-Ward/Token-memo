@@ -37,8 +37,7 @@ struct TokenMemoList: View {
     @State private var currentTemplateMemo: Memo? = nil
 
     // 템플릿 편집 시트
-    @State private var showTemplateEditSheet = false
-    @State private var selectedMemo: Memo? = nil
+    @State private var selectedTemplateIdForSheet: UUID? = nil
 
     // 플레이스홀더 관리 시트
     @State private var showPlaceholderManagementSheet = false
@@ -57,45 +56,19 @@ struct TokenMemoList: View {
                     ForEach($tokenMemos) { $memo in
                         HStack {
                             Button {
-                                // TODO: Enable after adding BiometricAuthManager.swift to Xcode project
-                                // if memo.isSecure {
-                                //     BiometricAuthManager.shared.authenticateUser { success, error in
-                                //         if success {
-                                //             copyMemo(memo: memo)
-                                //         } else {
-                                //             showAuthAlert = true
-                                //         }
-                                //     }
-                                // } else {
                                     copyMemo(memo: memo)
-                                // }
                             } label: {
                                 MemoRowView(memo: memo, fontSize: fontSize)
-                                .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                    NavigationLink {
-                                        MemoAdd(
-                                            insertedKeyword: memo.title,
-                                            insertedValue: memo.value,
-                                            insertedCategory: memo.category,
-                                            insertedIsTemplate: memo.isTemplate,
-                                            insertedIsSecure: memo.isSecure,
-                                            insertedShortcut: memo.shortcut ?? ""
-                                        )
-                                    } label: {
-                                        Label("update", systemImage: "pencil")
-                                    }
-                                    .tint(.green)
-                                }
                             }
                             .buttonStyle(PlainButtonStyle())
-                            
-                            
+
+
                             Spacer()
                             Button {
                                 withAnimation(.easeInOut) {
                                     memo.isFavorite.toggle()
                                     tokenMemos = sortMemos(tokenMemos)
-                                    
+
                                     // update
                                     do {
                                         try MemoStore.shared.save(memos: tokenMemos, type: .tokenMemo)
@@ -104,14 +77,30 @@ struct TokenMemoList: View {
                                         fatalError(error.localizedDescription)
                                     }
                                 }
-                                
-                                
+
+
                             } label: {
                                 Image(systemName: memo.isFavorite ? "heart.fill" : "heart")
                                     .symbolRenderingMode(.multicolor)
                             }
                             .frame(width: 40, height: 40)
                             .buttonStyle(BorderedButtonStyle())
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            NavigationLink {
+                                MemoAdd(
+                                    memoId: memo.id,
+                                    insertedKeyword: memo.title,
+                                    insertedValue: memo.value,
+                                    insertedCategory: memo.category,
+                                    insertedIsTemplate: memo.isTemplate,
+                                    insertedIsSecure: memo.isSecure,
+                                    insertedShortcut: memo.shortcut ?? ""
+                                )
+                            } label: {
+                                Label("수정", systemImage: "pencil")
+                            }
+                            .tint(.green)
                         }
                         .transition(.scale)
                     }
@@ -271,19 +260,20 @@ struct TokenMemoList: View {
                     }
                 )
             }
-            .sheet(isPresented: $showTemplateEditSheet) {
-                if let memo = selectedMemo {
-                    TemplateEditSheet(
-                        memo: memo,
-                        onCopy: { processedValue in
-                            finalizeCopy(memo: memo, processedValue: processedValue)
-                            showTemplateEditSheet = false
-                        },
-                        onCancel: {
-                            showTemplateEditSheet = false
-                        }
-                    )
-                }
+            .sheet(item: $selectedTemplateIdForSheet) { templateId in
+                TemplateSheetResolver(
+                    templateId: templateId,
+                    allMemos: tokenMemos,
+                    onCopy: { memo, processedValue in
+                        print("✅ [SHEET] 복사 버튼 클릭 - 값: \(processedValue)")
+                        finalizeCopy(memo: memo, processedValue: processedValue)
+                        selectedTemplateIdForSheet = nil
+                    },
+                    onCancel: {
+                        print("❌ [SHEET] 취소 버튼 클릭")
+                        selectedTemplateIdForSheet = nil
+                    }
+                )
             }
             .sheet(isPresented: $showPlaceholderManagementSheet) {
                 PlaceholderManagementSheet(allMemos: tokenMemos)
@@ -305,39 +295,74 @@ struct TokenMemoList: View {
                 }
             })
             .onAppear {
+                print("🎬 [TokenMemoList] onAppear 시작")
+
                 // load
                 do {
-                    tokenMemos = sortMemos(try MemoStore.shared.load(type: .tokenMemo))
-                    //tokenMemos.sort {$0.lastEdited > $1.lastEdited}
+                    print("📂 [TokenMemoList] 메모 로드 시작...")
+                    let loadedMemos = try MemoStore.shared.load(type: .tokenMemo)
+                    print("📊 [TokenMemoList] 로드된 메모 개수: \(loadedMemos.count)")
+
+                    tokenMemos = sortMemos(loadedMemos)
+                    print("🔄 [TokenMemoList] 메모 정렬 완료")
+                    print("📋 [TokenMemoList] 정렬 후 메모 리스트:")
+                    for (index, memo) in tokenMemos.enumerated() {
+                        print("   [\(index)] \(memo.title) - 즐겨찾기: \(memo.isFavorite), 수정일: \(memo.lastEdited)")
+                    }
+
                     loadedData = tokenMemos
-                    
+                    print("✅ [TokenMemoList] loadedData에 메모 저장 완료")
+
                 } catch {
+                    print("❌ [TokenMemoList] 메모 로드 실패: \(error.localizedDescription)")
                     fatalError(error.localizedDescription)
                 }
-                
-                if !(UIPasteboard.general.string?.isEmpty ?? true),
-                   isFirstVisit {
+
+                // 클립보드 자동 확인 기능 - 클립보드에 내용이 있으면 바로가기 시트 표시
+                // iOS 14+에서 처음 실행 시 "Allow Paste" 알림이 뜰 수 있습니다
+                // 한 번 허용하면 이후에는 알림 없이 작동합니다
+                print("📋 [TokenMemoList] 클립보드 확인 중...")
+                let hasClipboard = !(UIPasteboard.general.string?.isEmpty ?? true)
+                print("📋 [TokenMemoList] 클립보드 내용 있음: \(hasClipboard), isFirstVisit: \(isFirstVisit)")
+
+                if hasClipboard, isFirstVisit {
+                    print("🎯 [TokenMemoList] 클립보드 바로가기 시트 표시 예약")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        print("📱 [TokenMemoList] 바로가기 시트 표시")
                         showShortcutSheet = true
                     }
-                    
+
                     isFirstVisit = false
                     value = UIPasteboard.general.string ?? "error"
+                    print("📝 [TokenMemoList] 클립보드 값: \(value)")
                 }
-                
+
                 fontSize = UserDefaults.standard.object(forKey: "fontSize") as? CGFloat ?? 20.0
+                print("🔤 [TokenMemoList] 폰트 크기: \(fontSize)")
+
+                // 샘플 플레이스홀더 값 추가 (한 번만 실행)
+                addSamplePlaceholderValuesIfNeeded()
+
+                print("✅ [TokenMemoList] onAppear 완료")
             }
         }
     }
 
     private func sortMemos(_ memos: [Memo]) -> [Memo] {
-        return memos.sorted { (memo1, memo2) -> Bool in
+        print("🔢 [sortMemos] 정렬 시작 - 입력: \(memos.count)개")
+
+        let sorted = memos.sorted { (memo1, memo2) -> Bool in
             if memo1.isFavorite != memo2.isFavorite {
+                // 즐겨찾기가 다르면 즐겨찾기를 우선
                 return memo1.isFavorite && !memo2.isFavorite
             } else {
+                // 즐겨찾기가 같으면 수정일 기준
                 return memo1.lastEdited > memo2.lastEdited
             }
         }
+
+        print("✅ [sortMemos] 정렬 완료 - 출력: \(sorted.count)개")
+        return sorted
     }
     
     /// Empty list view
@@ -359,14 +384,19 @@ struct TokenMemoList: View {
     }
 
     private func copyMemo(memo: Memo) {
+        print("📝 [copyMemo] 메모 선택됨: \(memo.title), 템플릿: \(memo.isTemplate)")
+
         // 템플릿이면 편집 시트 표시
         if memo.isTemplate {
-            selectedMemo = memo
-            showTemplateEditSheet = true
+            print("📄 [copyMemo] 템플릿 메모 - TemplateEditSheet 표시")
+            print("🔍 [copyMemo] selectedTemplateIdForSheet 설정: \(memo.id)")
+            selectedTemplateIdForSheet = memo.id
+            print("✅ [copyMemo] selectedTemplateIdForSheet 설정 완료")
             return
         }
 
         // 일반 메모는 바로 복사
+        print("📋 [copyMemo] 일반 메모 - 바로 복사")
         let processedValue = memo.value
         finalizeCopy(memo: memo, processedValue: processedValue)
     }
@@ -461,6 +491,116 @@ struct TokenMemoList: View {
             loadedData = tokenMemos
         } catch {
             print("Error filtering by category: \(error)")
+        }
+    }
+
+    private func addSamplePlaceholderValuesIfNeeded() {
+        // 샘플 데이터 자동 추가 비활성화됨
+        return
+
+        // 이미 샘플 데이터를 추가했는지 확인
+        let key = "didAddSamplePlaceholderValues"
+
+        // 디버깅: 샘플 데이터를 강제로 다시 추가하려면 아래 주석을 해제하세요
+        // UserDefaults.standard.removeObject(forKey: key)
+        // print("🔄 [샘플 데이터] 플래그 리셋됨 - 샘플 데이터 재추가")
+
+        if UserDefaults.standard.bool(forKey: key) {
+            print("✅ [샘플 데이터] 이미 추가됨 - 스킵")
+
+            // 디버깅: 저장된 데이터 확인
+            print("🔍 [샘플 데이터] 저장된 플레이스홀더 값 확인:")
+            let testPlaceholders = ["{이름}", "{회사명}"]
+            for placeholder in testPlaceholders {
+                let values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+                print("   \(placeholder): \(values.count)개 - \(values.map { $0.value })")
+            }
+            return
+        }
+
+        print("🎁 [샘플 데이터] 플레이스홀더 샘플 값 추가 시작")
+
+        do {
+            let memos = try MemoStore.shared.load(type: .tokenMemo)
+
+            // "새해인사" 템플릿 찾기
+            if let newYearMemo = memos.first(where: { $0.title == "새해인사" && $0.isTemplate }) {
+                print("📝 [샘플 데이터] '새해인사' 템플릿 발견")
+
+                // {이름} 플레이스홀더에 샘플 값 추가
+                let names = ["유미", "주디", "리이오"]
+                for name in names {
+                    MemoStore.shared.addPlaceholderValue(
+                        name,
+                        for: "{이름}",
+                        sourceMemoId: newYearMemo.id,
+                        sourceMemoTitle: newYearMemo.title
+                    )
+                    print("   ✓ {이름}에 '\(name)' 추가")
+                }
+
+                // {회사명} 플레이스홀더에 샘플 값 추가
+                let companies = ["테크코리아", "글로벌인더스트리", "스마트솔루션", "이노베이션", "퓨처테크"]
+                for company in companies {
+                    MemoStore.shared.addPlaceholderValue(
+                        company,
+                        for: "{회사명}",
+                        sourceMemoId: newYearMemo.id,
+                        sourceMemoTitle: newYearMemo.title
+                    )
+                    print("   ✓ {회사명}에 '\(company)' 추가")
+                }
+
+                print("✅ [샘플 데이터] '새해인사' 템플릿에 샘플 값 추가 완료")
+            } else {
+                print("⚠️ [샘플 데이터] '새해인사' 템플릿을 찾을 수 없음")
+            }
+
+            // 모든 템플릿에 대해 공통 플레이스홀더 샘플 추가
+            for memo in memos where memo.isTemplate {
+                // 템플릿에서 플레이스홀더 추출
+                let placeholders = extractCustomPlaceholders(from: memo.value)
+
+                for placeholder in placeholders {
+                    // 이미 값이 있는지 확인
+                    let existingValues = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+
+                    if existingValues.isEmpty {
+                        // 공통 플레이스홀더에 대한 기본 샘플
+                        var samples: [String] = []
+
+                        switch placeholder {
+                        case "{주소}":
+                            samples = ["서울시 강남구", "경기도 성남시", "인천시 남동구"]
+                        case "{전화번호}":
+                            samples = ["010-1234-5678", "010-9876-5432", "010-5555-1234"]
+                        case "{이메일}":
+                            samples = ["example@email.com", "user@company.com", "contact@domain.com"]
+                        default:
+                            // 다른 플레이스홀더는 빈 상태로 유지
+                            break
+                        }
+
+                        for sample in samples {
+                            MemoStore.shared.addPlaceholderValue(
+                                sample,
+                                for: placeholder,
+                                sourceMemoId: memo.id,
+                                sourceMemoTitle: memo.title
+                            )
+                            print("   ✓ \(placeholder)에 '\(sample)' 추가 (템플릿: \(memo.title))")
+                        }
+                    }
+                }
+            }
+
+            // 샘플 데이터 추가 완료 플래그 설정
+            UserDefaults.standard.set(true, forKey: key)
+            UserDefaults.standard.synchronize()
+            print("🎉 [샘플 데이터] 모든 샘플 데이터 추가 완료")
+
+        } catch {
+            print("❌ [샘플 데이터] 메모 로드 실패: \(error)")
         }
     }
 
@@ -564,7 +704,11 @@ struct TemplateEditSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        print("🎨 [TemplateEditSheet.body] body 렌더링 시작 - 메모: \(memo.title)")
+        print("📊 [TemplateEditSheet.body] customPlaceholders 개수: \(customPlaceholders.count)")
+        print("📝 [TemplateEditSheet.body] placeholderInputs 개수: \(placeholderInputs.count)")
+
+        return NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     // 템플릿 원본
@@ -608,16 +752,51 @@ struct TemplateEditSheet: View {
                     }
 
                     // 플레이스홀더 입력
-                    if !customPlaceholders.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("값 선택")
+                    if customPlaceholders.isEmpty {
+                        // 플레이스홀더가 없는 경우
+                        VStack(spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.green)
+
+                            Text("설정할 값이 없습니다")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
+
+                            Text("이 템플릿은 바로 사용 가능합니다")
+                                .font(.caption)
                                 .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green.opacity(0.1))
+                        .cornerRadius(12)
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack(spacing: 8) {
+                                Text("값 선택")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.secondary)
+
+                                Spacer()
+
+                                // 안내 메시지
+                                HStack(spacing: 4) {
+                                    Image(systemName: "info.circle.fill")
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                    Text("값을 선택하세요")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
 
                             ForEach(customPlaceholders, id: \.self) { placeholder in
                                 PlaceholderSelectorView(
                                     placeholder: placeholder,
+                                    sourceMemoId: memo.id,
+                                    sourceMemoTitle: memo.title,
                                     selectedValue: Binding(
                                         get: { placeholderInputs[placeholder] ?? "" },
                                         set: { placeholderInputs[placeholder] = $0 }
@@ -662,17 +841,24 @@ struct TemplateEditSheet: View {
             }
         }
         .onAppear {
+            print("🎬 [TemplateEditSheet] onAppear 시작 - 메모: \(memo.title)")
             extractCustomPlaceholders()
             loadPlaceholderDefaults()
+            print("✅ [TemplateEditSheet] onAppear 완료")
         }
     }
 
     private func extractCustomPlaceholders() {
+        print("🔍 [TemplateEditSheet] 플레이스홀더 추출 시작")
         let autoVariables = ["{날짜}", "{시간}", "{연도}", "{월}", "{일}"]
         let pattern = "\\{([^}]+)\\}"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
+        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            print("❌ [TemplateEditSheet] 정규식 생성 실패")
+            return
+        }
 
         let text = memo.value
+        print("📄 [TemplateEditSheet] 템플릿 내용: \(text)")
         let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
         var placeholders: [String] = []
 
@@ -681,29 +867,46 @@ struct TemplateEditSheet: View {
                 let placeholder = String(text[range])
                 if !autoVariables.contains(placeholder) && !placeholders.contains(placeholder) {
                     placeholders.append(placeholder)
+                    print("   ✓ 발견: \(placeholder)")
                 }
             }
         }
 
         customPlaceholders = placeholders
+        print("📊 [TemplateEditSheet] 총 \(placeholders.count)개 플레이스홀더 발견: \(placeholders)")
     }
 
     private func loadPlaceholderDefaults() {
+        print("📥 [TemplateEditSheet] 기본값 로드 시작")
         for placeholder in customPlaceholders {
-            placeholderInputs[placeholder] = ""
+            // 새로운 형식으로 로드
+            print("   플레이스홀더: \(placeholder)")
+            let values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+            print("   로드된 값: \(values.count)개")
+
+            if let firstValue = values.first {
+                placeholderInputs[placeholder] = firstValue.value
+                print("   ✓ 기본값 설정: \(firstValue.value) (출처: \(firstValue.sourceMemoTitle))")
+            } else {
+                placeholderInputs[placeholder] = ""
+                print("   ⚠️ 값 없음 - 빈 문자열 설정")
+            }
         }
+        print("✅ [TemplateEditSheet] 기본값 로드 완료: \(placeholderInputs)")
     }
 }
 
 // 플레이스홀더 선택 뷰 (수정 가능)
 struct PlaceholderSelectorView: View {
     let placeholder: String
+    let sourceMemoId: UUID
+    let sourceMemoTitle: String
     @Binding var selectedValue: String
 
-    @State private var values: [String] = []
+    @State private var values: [PlaceholderValue] = []
     @State private var isAdding: Bool = false
     @State private var newValue: String = ""
-    @State private var showDeleteConfirm: String? = nil
+    @State private var showDeleteConfirm: PlaceholderValue? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -732,9 +935,15 @@ struct PlaceholderSelectorView: View {
                         .font(.callout)
 
                     Button {
-                        if !newValue.isEmpty && !values.contains(newValue) {
-                            values.append(newValue)
-                            saveValues()
+                        if !newValue.isEmpty && !values.contains(where: { $0.value == newValue }) {
+                            // 새 값 추가 (출처 정보 포함)
+                            MemoStore.shared.addPlaceholderValue(
+                                newValue,
+                                for: placeholder,
+                                sourceMemoId: sourceMemoId,
+                                sourceMemoTitle: sourceMemoTitle
+                            )
+                            loadValues()
                             selectedValue = newValue
                             newValue = ""
                             isAdding = false
@@ -765,22 +974,22 @@ struct PlaceholderSelectorView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(values, id: \.self) { value in
+                        ForEach(values) { placeholderValue in
                             HStack(spacing: 6) {
                                 Button {
-                                    selectedValue = value
+                                    selectedValue = placeholderValue.value
                                 } label: {
-                                    Text(value)
-                                        .font(.system(size: 14, weight: selectedValue == value ? .semibold : .regular))
+                                    Text(placeholderValue.value)
+                                        .font(.system(size: 14, weight: selectedValue == placeholderValue.value ? .semibold : .regular))
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 8)
-                                        .background(selectedValue == value ? Color.blue : Color(.systemGray5))
-                                        .foregroundColor(selectedValue == value ? .white : .primary)
+                                        .background(selectedValue == placeholderValue.value ? Color.blue : Color(.systemGray5))
+                                        .foregroundColor(selectedValue == placeholderValue.value ? .white : .primary)
                                         .cornerRadius(16)
                                 }
 
                                 Button {
-                                    showDeleteConfirm = value
+                                    showDeleteConfirm = placeholderValue
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
                                         .font(.system(size: 14))
@@ -796,7 +1005,9 @@ struct PlaceholderSelectorView: View {
         .background(Color(.systemGray6))
         .cornerRadius(10)
         .onAppear {
+            print("🎬 [PlaceholderSelectorView] onAppear - 플레이스홀더: \(placeholder)")
             loadValues()
+            print("✅ [PlaceholderSelectorView] onAppear 완료 - 로드된 값: \(values.count)개, 선택된 값: '\(selectedValue)'")
         }
         .alert("삭제 확인", isPresented: .constant(showDeleteConfirm != nil)) {
             Button("취소", role: .cancel) {
@@ -804,9 +1015,9 @@ struct PlaceholderSelectorView: View {
             }
             Button("삭제", role: .destructive) {
                 if let valueToDelete = showDeleteConfirm {
-                    values.removeAll { $0 == valueToDelete }
-                    saveValues()
-                    if selectedValue == valueToDelete {
+                    MemoStore.shared.deletePlaceholderValue(valueId: valueToDelete.id, for: placeholder)
+                    loadValues()
+                    if selectedValue == valueToDelete.value {
                         selectedValue = ""
                     }
                 }
@@ -814,21 +1025,15 @@ struct PlaceholderSelectorView: View {
             }
         } message: {
             if let value = showDeleteConfirm {
-                Text("'\(value)'을(를) 삭제하시겠습니까?")
+                Text("'\(value.value)'을(를) 삭제하시겠습니까?")
             }
         }
     }
 
     private func loadValues() {
-        let key = "predefined_\(placeholder)"
-        if let saved = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.stringArray(forKey: key) {
-            values = saved
-        }
-    }
-
-    private func saveValues() {
-        let key = "predefined_\(placeholder)"
-        UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.set(values, forKey: key)
+        print("   📥 [PlaceholderSelectorView.loadValues] 값 로드 중...")
+        values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+        print("   ✅ [PlaceholderSelectorView.loadValues] 완료 - \(values.count)개")
     }
 }
 
@@ -910,86 +1115,354 @@ struct PlaceholderManagementSheet: View {
     let allMemos: [Memo]
     @Environment(\.dismiss) private var dismiss
 
-    @State private var allPlaceholders: [String] = []
+    var templateMemos: [Memo] {
+        allMemos.filter { $0.isTemplate }
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if allPlaceholders.isEmpty {
-                        VStack(spacing: 12) {
-                            Image(systemName: "doc.text.magnifyingglass")
-                                .font(.system(size: 50))
-                                .foregroundColor(.gray)
-                            Text("템플릿이 없습니다")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            Text("템플릿 메모를 생성하고 {} 를 사용하면\n여기서 관리할 수 있습니다")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
+            if templateMemos.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
+                    Text("템플릿이 없습니다")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    Text("템플릿 메모를 생성하고 {} 를 사용하면\n여기서 관리할 수 있습니다")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .navigationTitle("플레이스홀더 관리")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("완료") {
+                            dismiss()
                         }
-                        .padding(.top, 50)
-                    } else {
-                        VStack(spacing: 12) {
-                            ForEach(allPlaceholders, id: \.self) { placeholder in
-                                PlaceholderManagementRow(placeholder: placeholder)
+                        .fontWeight(.semibold)
+                    }
+                }
+            } else {
+                List {
+                    ForEach(templateMemos) { template in
+                        NavigationLink {
+                            TemplateDetailPlaceholderView(template: template)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(template.title)
+                                    .font(.headline)
+
+                                Text(extractPlaceholderPreview(from: template.value))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
                             }
+                            .padding(.vertical, 4)
                         }
-                        .padding()
                     }
                 }
-            }
-            .navigationTitle("플레이스홀더 관리")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("완료") {
-                        dismiss()
+                .navigationTitle("플레이스홀더 관리")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("완료") {
+                            dismiss()
+                        }
+                        .fontWeight(.semibold)
                     }
-                    .fontWeight(.semibold)
                 }
-            }
-            .onAppear {
-                extractAllPlaceholders()
             }
         }
     }
 
-    private func extractAllPlaceholders() {
+    private func extractPlaceholderPreview(from text: String) -> String {
+        let autoVariables = ["{날짜}", "{시간}", "{연도}", "{월}", "{일}"]
+        let pattern = "\\{([^}]+)\\}"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return "플레이스홀더 없음" }
+
+        let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+        var placeholders: [String] = []
+
+        for match in matches {
+            if let range = Range(match.range, in: text) {
+                let placeholder = String(text[range])
+                if !autoVariables.contains(placeholder) && !placeholders.contains(placeholder) {
+                    placeholders.append(placeholder)
+                }
+            }
+        }
+
+        if placeholders.isEmpty {
+            return "플레이스홀더 없음"
+        }
+
+        return placeholders.map { $0.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: "") }.joined(separator: ", ")
+    }
+}
+
+// 템플릿별 플레이스홀더 상세 관리 화면
+struct TemplateDetailPlaceholderView: View {
+    let template: Memo
+    @State private var placeholders: [String] = []
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // 템플릿 미리보기
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("템플릿 내용")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+
+                    Text(template.value)
+                        .font(.body)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.top)
+
+                // 플레이스홀더 목록
+                if placeholders.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.green)
+
+                        Text("이 템플릿에는 플레이스홀더가 없습니다")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 50)
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("플레이스홀더 (\(placeholders.count)개)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal)
+
+                        VStack(spacing: 12) {
+                            ForEach(placeholders, id: \.self) { placeholder in
+                                TemplatePlaceholderRow(
+                                    placeholder: placeholder,
+                                    templateId: template.id,
+                                    templateTitle: template.title
+                                )
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+        }
+        .navigationTitle(template.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            extractPlaceholders()
+        }
+    }
+
+    private func extractPlaceholders() {
         let autoVariables = ["{날짜}", "{시간}", "{연도}", "{월}", "{일}"]
         let pattern = "\\{([^}]+)\\}"
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
 
-        var placeholders: Set<String> = []
+        let matches = regex.matches(in: template.value, range: NSRange(template.value.startIndex..., in: template.value))
+        var extractedPlaceholders: [String] = []
 
-        // 모든 템플릿 메모에서 플레이스홀더 추출
-        for memo in allMemos where memo.isTemplate {
-            let matches = regex.matches(in: memo.value, range: NSRange(memo.value.startIndex..., in: memo.value))
-
-            for match in matches {
-                if let range = Range(match.range, in: memo.value) {
-                    let placeholder = String(memo.value[range])
-                    if !autoVariables.contains(placeholder) {
-                        placeholders.insert(placeholder)
-                    }
+        for match in matches {
+            if let range = Range(match.range, in: template.value) {
+                let placeholder = String(template.value[range])
+                if !autoVariables.contains(placeholder) && !extractedPlaceholders.contains(placeholder) {
+                    extractedPlaceholders.append(placeholder)
                 }
             }
         }
 
-        allPlaceholders = Array(placeholders).sorted()
+        placeholders = extractedPlaceholders
     }
 }
 
-// 플레이스홀더 관리 행
+// 템플릿 내의 개별 플레이스홀더 행
+struct TemplatePlaceholderRow: View {
+    let placeholder: String
+    let templateId: UUID
+    let templateTitle: String
+
+    @State private var values: [PlaceholderValue] = []
+    @State private var showDeleteConfirm: PlaceholderValue? = nil
+    @State private var editingValue: PlaceholderValue? = nil
+    @State private var editText: String = ""
+    @State private var isExpanded: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // 헤더 - 전체 영역이 터치 가능
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(placeholder.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: ""))
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    Text("값 \(values.count)개")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer(minLength: 20)
+
+                Image(systemName: isExpanded ? "chevron.up.circle.fill" : "chevron.down.circle.fill")
+                    .foregroundColor(.blue)
+                    .font(.system(size: 24))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(.systemBackground))
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.spring(response: 0.3)) {
+                    isExpanded.toggle()
+                }
+            }
+
+            // 확장된 내용
+            if isExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                // 값 목록
+                VStack(spacing: 12) {
+                    if values.isEmpty {
+                        Text("값이 없습니다.\n템플릿 사용 시 값을 추가하세요.")
+                            .font(.callout)
+                            .foregroundColor(.orange)
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .background(Color.orange.opacity(0.1))
+                            .cornerRadius(8)
+                            .multilineTextAlignment(.center)
+                    } else {
+                        VStack(spacing: 10) {
+                            ForEach(values) { value in
+                                HStack(alignment: .top) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(value.value)
+                                            .font(.body)
+                                            .fontWeight(.semibold)
+
+                                        Text(formatDate(value.addedAt))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    HStack(spacing: 16) {
+                                        Button {
+                                            editingValue = value
+                                            editText = value.value
+                                        } label: {
+                                            Image(systemName: "pencil.circle.fill")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.blue)
+                                        }
+
+                                        Button {
+                                            showDeleteConfirm = value
+                                        } label: {
+                                            Image(systemName: "trash.circle.fill")
+                                                .font(.system(size: 28))
+                                                .foregroundColor(.red)
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(10)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            }
+        }
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.systemGray4), lineWidth: 1)
+        )
+        .onAppear {
+            loadValues()
+        }
+        .alert("삭제 확인", isPresented: .constant(showDeleteConfirm != nil)) {
+            Button("취소", role: .cancel) {
+                showDeleteConfirm = nil
+            }
+            Button("삭제", role: .destructive) {
+                if let valueToDelete = showDeleteConfirm {
+                    MemoStore.shared.deletePlaceholderValue(valueId: valueToDelete.id, for: placeholder)
+                    loadValues()
+                }
+                showDeleteConfirm = nil
+            }
+        } message: {
+            if let value = showDeleteConfirm {
+                Text("'\(value.value)'을(를) 삭제하시겠습니까?")
+            }
+        }
+        .alert("값 수정", isPresented: .constant(editingValue != nil)) {
+            TextField("값", text: $editText)
+            Button("취소", role: .cancel) {
+                editingValue = nil
+            }
+            Button("저장") {
+                if let oldValue = editingValue, !editText.isEmpty {
+                    // 기존 값 삭제
+                    MemoStore.shared.deletePlaceholderValue(valueId: oldValue.id, for: placeholder)
+                    // 새 값 추가
+                    MemoStore.shared.addPlaceholderValue(editText, for: placeholder, sourceMemoId: templateId, sourceMemoTitle: templateTitle)
+                    loadValues()
+                }
+                editingValue = nil
+            }
+        } message: {
+            if let value = editingValue {
+                Text("'\(value.value)' 값을 수정하세요.")
+            }
+        }
+    }
+
+    private func loadValues() {
+        values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: date)
+    }
+}
+
+// 플레이스홀더 관리 행 (출처 정보 포함) - DEPRECATED, 사용하지 않음
 struct PlaceholderManagementRow: View {
     let placeholder: String
 
-    @State private var values: [String] = []
-    @State private var isAdding: Bool = false
-    @State private var newValue: String = ""
-    @State private var showDeleteConfirm: String? = nil
+    @State private var values: [PlaceholderValue] = []
+    @State private var showDeleteConfirm: PlaceholderValue? = nil
     @State private var isExpanded: Bool = false
+    @State private var editingValue: PlaceholderValue? = nil
+    @State private var editText: String = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -1031,70 +1504,69 @@ struct PlaceholderManagementRow: View {
 
                     Spacer()
 
-                    Button {
-                        isAdding.toggle()
-                    } label: {
-                        Label(isAdding ? "취소" : "추가", systemImage: isAdding ? "xmark.circle.fill" : "plus.circle.fill")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(isAdding ? .red : .blue)
-                    }
-                }
-
-                // 값 추가 입력
-                if isAdding {
-                    HStack(spacing: 8) {
-                        TextField("새 값 입력", text: $newValue)
-                            .textFieldStyle(.roundedBorder)
-                            .font(.callout)
-
-                        Button("추가") {
-                            if !newValue.isEmpty && !values.contains(newValue) {
-                                values.append(newValue)
-                                saveValues()
-                                newValue = ""
-                                isAdding = false
-                            }
-                        }
+                    Text("템플릿에서 값을 추가하세요")
                         .font(.caption)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(newValue.isEmpty ? Color.gray : Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .disabled(newValue.isEmpty)
-                    }
+                        .foregroundColor(.secondary)
                 }
 
                 // 값 목록
                 if values.isEmpty {
-                    Text("값이 없습니다. + 버튼을 눌러 추가하세요.")
+                    Text("값이 없습니다.\n템플릿 메모에서 값을 추가하세요.")
                         .font(.caption)
                         .foregroundColor(.orange)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .background(Color.orange.opacity(0.1))
                         .cornerRadius(8)
+                        .multilineTextAlignment(.center)
                 } else {
                     VStack(spacing: 8) {
-                        ForEach(values, id: \.self) { value in
-                            HStack {
-                                Text(value)
-                                    .font(.body)
+                        ForEach(values) { value in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(alignment: .top) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(value.value)
+                                            .font(.body)
+                                            .fontWeight(.semibold)
 
-                                Spacer()
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "doc.text.fill")
+                                                .font(.caption2)
+                                                .foregroundColor(.blue)
+                                            Text(value.sourceMemoTitle)
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
 
-                                Button {
-                                    showDeleteConfirm = value
-                                } label: {
-                                    Image(systemName: "trash")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.red)
+                                        Text(formatDate(value.addedAt))
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    HStack(spacing: 12) {
+                                        Button {
+                                            editingValue = value
+                                            editText = value.value
+                                        } label: {
+                                            Image(systemName: "pencil")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.blue)
+                                        }
+
+                                        Button {
+                                            showDeleteConfirm = value
+                                        } label: {
+                                            Image(systemName: "trash")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.red)
+                                        }
+                                    }
                                 }
                             }
                             .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 10)
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
                         }
@@ -1118,27 +1590,142 @@ struct PlaceholderManagementRow: View {
             }
             Button("삭제", role: .destructive) {
                 if let valueToDelete = showDeleteConfirm {
-                    values.removeAll { $0 == valueToDelete }
-                    saveValues()
+                    MemoStore.shared.deletePlaceholderValue(valueId: valueToDelete.id, for: placeholder)
+                    loadValues()
                 }
                 showDeleteConfirm = nil
             }
         } message: {
             if let value = showDeleteConfirm {
-                Text("'\(value)'을(를) 삭제하시겠습니까?")
+                Text("'\(value.value)'을(를) 삭제하시겠습니까?\n\n출처: \(value.sourceMemoTitle)")
+            }
+        }
+        .alert("값 수정", isPresented: .constant(editingValue != nil)) {
+            TextField("값", text: $editText)
+            Button("취소", role: .cancel) {
+                editingValue = nil
+                editText = ""
+            }
+            Button("저장") {
+                if let valueToEdit = editingValue, !editText.isEmpty {
+                    // 기존 값 삭제
+                    MemoStore.shared.deletePlaceholderValue(valueId: valueToEdit.id, for: placeholder)
+                    // 새 값 추가 (출처 정보 유지)
+                    MemoStore.shared.addPlaceholderValue(
+                        editText,
+                        for: placeholder,
+                        sourceMemoId: valueToEdit.sourceMemoId,
+                        sourceMemoTitle: valueToEdit.sourceMemoTitle
+                    )
+                    loadValues()
+                }
+                editingValue = nil
+                editText = ""
+            }
+        } message: {
+            if let value = editingValue {
+                Text("'\(value.value)' 값을 수정하세요.\n\n출처: \(value.sourceMemoTitle)")
             }
         }
     }
 
     private func loadValues() {
-        let key = "predefined_\(placeholder)"
-        if let saved = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.stringArray(forKey: key) {
-            values = saved
+        values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm"
+        return formatter.string(from: date)
+    }
+}
+
+// Template Sheet Resolver - UUID를 Identifiable로 만들고 메모를 찾아서 TemplateEditSheet 표시
+struct TemplateSheetResolver: View {
+    let templateId: UUID
+    let allMemos: [Memo]
+    let onCopy: (Memo, String) -> Void
+    let onCancel: () -> Void
+
+    @State private var loadedMemo: Memo? = nil
+    @State private var isLoading: Bool = false
+
+    var body: some View {
+        Group {
+            if let memo = loadedMemo {
+                TemplateEditSheet(
+                    memo: memo,
+                    onCopy: { processedValue in
+                        onCopy(memo, processedValue)
+                    },
+                    onCancel: onCancel
+                )
+            } else {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+
+                    Text("템플릿 불러오는 중...")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemBackground))
+            }
+        }
+        .onAppear {
+            print("🎬 [TemplateSheetResolver] onAppear - ID: \(templateId)")
+            loadMemo()
         }
     }
 
-    private func saveValues() {
-        let key = "predefined_\(placeholder)"
-        UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.set(values, forKey: key)
+    private func loadMemo() {
+        guard !isLoading else {
+            print("⚠️ [TemplateSheetResolver] 이미 로딩 중...")
+            return
+        }
+
+        isLoading = true
+        print("🔄 [TemplateSheetResolver] 메모 로드 시작 - ID: \(templateId)")
+
+        // 1. 먼저 현재 메모리의 allMemos에서 찾기
+        if let memo = allMemos.first(where: { $0.id == templateId }) {
+            print("✅ [TemplateSheetResolver] 메모리에서 메모 찾음: \(memo.title)")
+            loadedMemo = memo
+            isLoading = false
+            return
+        }
+
+        // 2. 메모리에 없으면 파일에서 다시 로드
+        print("🔍 [TemplateSheetResolver] 메모리에 없음 - 파일에서 로드 시도")
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let memos = try MemoStore.shared.load(type: .tokenMemo)
+                print("📥 [TemplateSheetResolver] 파일에서 \(memos.count)개 메모 로드됨")
+
+                if let memo = memos.first(where: { $0.id == templateId }) {
+                    DispatchQueue.main.async {
+                        print("✅ [TemplateSheetResolver] 파일에서 메모 찾음: \(memo.title)")
+                        loadedMemo = memo
+                        isLoading = false
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        print("❌ [TemplateSheetResolver] 메모를 찾을 수 없음 - ID: \(templateId)")
+                        isLoading = false
+                    }
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    print("❌ [TemplateSheetResolver] 메모 로드 실패: \(error)")
+                    isLoading = false
+                }
+            }
+        }
     }
+}
+
+// UUID를 Identifiable로 만들기 위한 extension
+extension UUID: Identifiable {
+    public var id: UUID { self }
 }

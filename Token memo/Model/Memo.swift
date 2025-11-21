@@ -35,6 +35,23 @@ struct OldMemo: Identifiable, Codable {
     var isChecked: Bool = false
 }
 
+// 플레이스홀더 값 모델 - 어느 템플릿에서 추가되었는지 추적
+struct PlaceholderValue: Identifiable, Codable {
+    var id = UUID()
+    var value: String
+    var sourceMemoId: UUID  // 이 값을 추가한 메모의 ID
+    var sourceMemoTitle: String  // 이 값을 추가한 메모의 제목
+    var addedAt: Date = Date()
+
+    init(id: UUID = UUID(), value: String, sourceMemoId: UUID, sourceMemoTitle: String, addedAt: Date = Date()) {
+        self.id = id
+        self.value = value
+        self.sourceMemoId = sourceMemoId
+        self.sourceMemoTitle = sourceMemoTitle
+        self.addedAt = addedAt
+    }
+}
+
 struct Memo: Identifiable, Codable {
     var id = UUID()
     var title: String
@@ -51,7 +68,10 @@ struct Memo: Identifiable, Codable {
     var templateVariables: [String] = []
     var shortcut: String?
 
-    init(id: UUID = UUID(), title: String, value: String, isChecked: Bool = false, lastEdited: Date = Date(), isFavorite: Bool = false, category: String = "기본", isSecure: Bool = false, isTemplate: Bool = false, templateVariables: [String] = [], shortcut: String? = nil) {
+    // 템플릿의 플레이스홀더 값들 저장 (예: {이름}: [유미, 주디, 리이오])
+    var placeholderValues: [String: [String]] = [:]
+
+    init(id: UUID = UUID(), title: String, value: String, isChecked: Bool = false, lastEdited: Date = Date(), isFavorite: Bool = false, category: String = "기본", isSecure: Bool = false, isTemplate: Bool = false, templateVariables: [String] = [], shortcut: String? = nil, placeholderValues: [String: [String]] = [:]) {
         self.id = id
         self.title = title
         self.value = value
@@ -63,6 +83,7 @@ struct Memo: Identifiable, Codable {
         self.isTemplate = isTemplate
         self.templateVariables = templateVariables
         self.shortcut = shortcut
+        self.placeholderValues = placeholderValues
     }
     
     init(from oldMemo: OldMemo) {
@@ -87,6 +108,7 @@ struct Memo: Identifiable, Codable {
         case isTemplate
         case templateVariables
         case shortcut
+        case placeholderValues
     }
     
     static var dummyData: [Memo] = [

@@ -15,6 +15,7 @@ struct MemoAdd: View {
     @State private var showSucessAlert: Bool = false
 
     // 수정 모드용 초기값
+    var memoId: UUID? = nil // 수정할 메모의 ID
     var insertedKeyword: String = ""
     var insertedValue: String = ""
     var insertedCategory: String = "기본"
@@ -266,7 +267,7 @@ struct MemoAdd: View {
             }
 
             // 하단 버튼 영역
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 Divider()
 
                 HStack(spacing: 12) {
@@ -304,22 +305,59 @@ struct MemoAdd: View {
                                 // 템플릿 변수 추출
                                 let variables = extractTemplateVariables(from: value)
 
-                                let newMemo = Memo(
-                                    title: keyword,
-                                    value: value,
-                                    lastEdited: Date(),
-                                    category: selectedCategory,
-                                    isSecure: isSecure,
-                                    isTemplate: isTemplate,
-                                    templateVariables: variables,
-                                    shortcut: shortcut.isEmpty ? nil : shortcut
-                                )
+                                let finalMemoId: UUID
+                                let finalMemoTitle: String
 
-                                loadedMemos.append(newMemo)
+                                if let existingId = memoId,
+                                   let index = loadedMemos.firstIndex(where: { $0.id == existingId }) {
+                                    // 기존 메모 업데이트
+                                    var updatedMemo = loadedMemos[index]
+                                    updatedMemo.title = keyword
+                                    updatedMemo.value = value
+                                    updatedMemo.lastEdited = Date()
+                                    updatedMemo.category = selectedCategory
+                                    updatedMemo.isSecure = isSecure
+                                    updatedMemo.isTemplate = isTemplate
+                                    updatedMemo.templateVariables = variables
+                                    updatedMemo.shortcut = shortcut.isEmpty ? nil : shortcut
+                                    updatedMemo.placeholderValues = placeholderValues
+
+                                    loadedMemos[index] = updatedMemo
+                                    finalMemoId = existingId
+                                    finalMemoTitle = keyword
+                                } else {
+                                    // 새 메모 추가
+                                    let newMemoId = UUID()
+                                    let newMemo = Memo(
+                                        id: newMemoId,
+                                        title: keyword,
+                                        value: value,
+                                        lastEdited: Date(),
+                                        category: selectedCategory,
+                                        isSecure: isSecure,
+                                        isTemplate: isTemplate,
+                                        templateVariables: variables,
+                                        shortcut: shortcut.isEmpty ? nil : shortcut,
+                                        placeholderValues: placeholderValues
+                                    )
+                                    loadedMemos.append(newMemo)
+                                    finalMemoId = newMemoId
+                                    finalMemoTitle = keyword
+                                }
+
                                 try MemoStore.shared.save(memos: loadedMemos, type: .tokenMemo)
 
-                                // 플레이스홀더 값들 저장
-                                savePlaceholderValues()
+                                // 플레이스홀더 값들 저장 (출처 정보 포함)
+                                for (placeholder, values) in placeholderValues where !values.isEmpty {
+                                    for value in values {
+                                        MemoStore.shared.addPlaceholderValue(
+                                            value,
+                                            for: placeholder,
+                                            sourceMemoId: finalMemoId,
+                                            sourceMemoTitle: finalMemoTitle
+                                        )
+                                    }
+                                }
                             } catch {
                                 fatalError(error.localizedDescription)
                             }
@@ -341,9 +379,11 @@ struct MemoAdd: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 8)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
             }
             .background(Color(.systemBackground))
+            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -2)
         }
         .alert(Constants.insertContents, isPresented: $showAlert) {
             
@@ -408,20 +448,12 @@ struct MemoAdd: View {
     // 플레이스홀더 값 로드
     private func loadPlaceholderValues() {
         for placeholder in detectedPlaceholders {
-            let key = "predefined_\(placeholder)"
-            if let saved = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.stringArray(forKey: key) {
-                placeholderValues[placeholder] = saved
-            }
+            // 새로운 형식으로 로드
+            let values = MemoStore.shared.loadPlaceholderValues(for: placeholder)
+            placeholderValues[placeholder] = values.map { $0.value }
         }
     }
 
-    // 플레이스홀더 값 저장
-    private func savePlaceholderValues() {
-        for (placeholder, values) in placeholderValues where !values.isEmpty {
-            let key = "predefined_\(placeholder)"
-            UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.set(values, forKey: key)
-        }
-    }
 
     // 템플릿 변수 추출 함수
     private func extractTemplateVariables(from text: String) -> [String] {

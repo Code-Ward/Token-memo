@@ -8,7 +8,7 @@
 import UIKit
 
 protocol TextInput {
-    func tapped(text: String)
+    func tapped(text: String, memoId: UUID)
 }
 
 class CollectionViewCell: UICollectionViewCell {
@@ -48,10 +48,11 @@ class CollectionViewCell: UICollectionViewCell {
     }
     
     @objc func didTapCell() {
-        
+
         if let index = clipKey.firstIndex(of: titleLabel.text!) {
             let tappedText = clipValue[index]
-            delegate?.tapped(text: tappedText)
+            let tappedMemoId = clipMemoId[index]
+            delegate?.tapped(text: tappedText, memoId: tappedMemoId)
         }
     }
 }

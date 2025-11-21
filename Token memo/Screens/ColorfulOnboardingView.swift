@@ -9,11 +9,12 @@ import SwiftUI
 
 /// Shows a full color background for each onboarding view
 struct ColorfulOnboardingView: View {
-    
+
     @State var pages = [PageDetails]()
     @State private var pageIndex: Int = 0
     private let bottomSectionHeight: CGFloat = 100
     var exitAction: () -> Void
+    @State private var showSettingsAlert = false
     
     // MARK: - Main rendering function
     var body: some View {
@@ -30,6 +31,16 @@ struct ColorfulOnboardingView: View {
                 UIScrollView.appearance().bounces = false
             }
             BottomSectionView
+        }
+        .alert("설정으로 이동", isPresented: $showSettingsAlert) {
+            Button("취소", role: .cancel) {}
+            Button("설정 열기") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+        } message: {
+            Text("설정 앱에서 키보드를 추가하고 전체 접근 권한을 허용해주세요.")
         }
     }
     
@@ -84,6 +95,22 @@ struct ColorfulOnboardingView: View {
                         }.frame(height: pageDotSize)
                     })
                 }.foregroundColor(.white)
+
+                /// Settings button
+                Button(action: {
+                    showSettingsAlert = true
+                }, label: {
+                    HStack {
+                        Image(systemName: "gear")
+                        Text("설정으로 이동")
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.white.opacity(0.3))
+                    .cornerRadius(25)
+                })
+
                 Spacer()
                 /// Next button
                 HStack {

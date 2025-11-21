@@ -12,6 +12,8 @@ typealias KeyboardData = [String:String]
 // var displayKeyboardData: KeyboardData = [:]
 var clipKey: [String] = []
 var clipValue: [String] = []
+var clipMemoId: [UUID] = []  // 메모 ID 저장
+var clipMemos: [Memo] = []  // 전체 메모 객체 저장
 var tappedIndex = 2
 var clipboardData: KeyboardData = [:]
 var tokenMemoData: KeyboardData = [:]
@@ -147,8 +149,11 @@ class KeyboardViewController: UIInputViewController {
         myKeyboardView.heightAnchor.constraint(equalToConstant: 200).isActive = true
         NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: "addTextEntry"), object: nil, queue: nil) { notification in
             print("🔔 addTextEntry 알림 수신")
-            if let text = notification.object as? String {
+            if let text = notification.object as? String,
+               let userInfo = notification.userInfo,
+               let memoId = userInfo["memoId"] as? UUID {
                 print("📝 텍스트: \(text)")
+                print("🆔 메모 ID: \(memoId)")
 
                 // 커스텀 플레이스홀더 확인
                 let customPlaceholders = self.extractCustomPlaceholders(from: text)
@@ -156,13 +161,14 @@ class KeyboardViewController: UIInputViewController {
 
                 if !customPlaceholders.isEmpty {
                     print("✅ 템플릿 입력 오버레이 표시")
-                    // 커스텀 오버레이 표시
+                    // 커스텀 오버레이 표시 (메모 ID 포함)
                     NotificationCenter.default.post(
                         name: NSNotification.Name("showTemplateInput"),
                         object: nil,
                         userInfo: [
                             "text": text,
-                            "placeholders": customPlaceholders
+                            "placeholders": customPlaceholders,
+                            "memoId": memoId
                         ]
                     )
                 } else {
@@ -173,7 +179,7 @@ class KeyboardViewController: UIInputViewController {
                     self.textDocumentProxy.insertText(processedText)
                 }
             } else {
-                print("❌ 텍스트가 nil입니다")
+                print("❌ 텍스트 또는 메모 ID가 없습니다")
             }
         }
 
@@ -329,20 +335,54 @@ class KeyboardViewController: UIInputViewController {
         do {
             var temp = try MemoStore.shared.load(type: .tokenMemo)
 
+            print("📱 [KeyboardViewController.loadMemos] 메모 로드 완료 - 총 \(temp.count)개")
+
             // 필터 적용
             if showOnlyTemplates {
                 temp = temp.filter { $0.isTemplate }
+                print("   🔍 템플릿 필터 적용 - \(temp.count)개")
             } else if showOnlyFavorites {
                 temp = temp.filter { $0.isFavorite }
+                print("   ⭐ 즐겨찾기 필터 적용 - \(temp.count)개")
             }
 
             temp = sortMemos(temp)
             clipKey = []
             clipValue = []
-            for item in temp {
+            clipMemoId = []
+            clipMemos = []
+
+            print("\n📋 [KeyboardViewController] 불러온 메모 상세 정보:")
+            for (index, item) in temp.enumerated() {
+                print("   [\(index)] =====================================")
+                print("       ID: \(item.id)")
+                print("       제목: \(item.title)")
+                print("       값: \(item.value)")
+                print("       카테고리: \(item.category)")
+                print("       즐겨찾기: \(item.isFavorite)")
+                print("       템플릿: \(item.isTemplate)")
+                print("       보안: \(item.isSecure)")
+                print("       바로가기: \(item.shortcut ?? "없음")")
+                print("       수정일: \(item.lastEdited)")
+                print("       사용횟수: \(item.clipCount)")
+                print("       템플릿 변수: \(item.templateVariables)")
+                print("       📦 플레이스홀더 값:")
+                if item.placeholderValues.isEmpty {
+                    print("           (비어있음)")
+                } else {
+                    for (placeholder, values) in item.placeholderValues {
+                        print("           \(placeholder): \(values)")
+                    }
+                }
+                print("   ========================================\n")
+
                 clipKey.append(item.title)
                 clipValue.append(item.value)
+                clipMemoId.append(item.id)
+                clipMemos.append(item)
             }
+
+            print("✅ [KeyboardViewController] clipMemos 배열에 \(clipMemos.count)개 저장 완료\n")
 
             var tempDic: [String:String] = [:]
             for item in temp {
@@ -350,7 +390,7 @@ class KeyboardViewController: UIInputViewController {
                 tokenMemoData[item.title] = item.value
             }
         } catch {
-            print("Error loading memos: \(error.localizedDescription)")
+            print("❌ Error loading memos: \(error.localizedDescription)")
         }
     }
 
@@ -437,9 +477,9 @@ class KeyboardViewController: UIInputViewController {
 //}
 
 extension KeyboardViewController: TextInput {
-    func tapped(text: String) {
-        let proxy = textDocumentProxy as UIKeyInput
-        proxy.insertText(text)
+    func tapped(text: String, memoId: UUID) {
+        print("📱 [KeyboardViewController] 메모 터치됨 - ID: \(memoId)")
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "addTextEntry"), object: text, userInfo: ["memoId": memoId])
     }
 }
 

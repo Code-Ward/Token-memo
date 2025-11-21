@@ -10,33 +10,156 @@ import SwiftUI
 var showOnlyTemplates: Bool = false
 var showOnlyFavorites: Bool = false
 
-// 미리 정의된 값들 저장소
+// 미리 정의된 값들 저장소 - 새로운 구조 사용
 class PredefinedValuesStore {
     static let shared = PredefinedValuesStore()
 
-    // UserDefaults에서 불러오기
-    func getValues(for placeholder: String) -> [String] {
-        let key = "predefined_\(placeholder)"
-        if let saved = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.stringArray(forKey: key) {
-            return saved
-        }
-
-        // 기본값
-        switch placeholder {
-        case "{이름}":
-            return ["김철수", "이영희", "박민수", "최지은", "정하늘"]
-        case "{회사명}":
-            return ["삼성전자", "네이버", "카카오", "라인", "쿠팡"]
-        case "{장소}":
-            return ["서울", "강남", "홍대", "신촌", "판교"]
-        default:
-            return []
-        }
+    // PlaceholderValue 모델 (키보드 전용 - 메인 앱의 PlaceholderValue와 같은 구조)
+    private struct KeyboardPlaceholderValue: Codable {
+        var id: UUID
+        var value: String
+        var sourceMemoId: UUID
+        var sourceMemoTitle: String
+        var addedAt: Date
     }
 
-    func saveValues(_ values: [String], for placeholder: String) {
-        let key = "predefined_\(placeholder)"
-        UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.set(values, forKey: key)
+    // UserDefaults에서 불러오기 (새로운 구조)
+    func getValues(for placeholder: String) -> [String] {
+        print("🔍 [PredefinedValuesStore] getValues 호출 - placeholder: \(placeholder)")
+        let key = "placeholder_values_\(placeholder)"
+        print("   Key: \(key)")
+
+        // 새로운 형식으로 로드 시도
+        if let data = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.data(forKey: key) {
+            print("   ✅ 데이터 발견 - 크기: \(data.count) bytes")
+
+            if let placeholderValues = try? JSONDecoder().decode([KeyboardPlaceholderValue].self, from: data) {
+                let values = placeholderValues.map { $0.value }
+                print("   ✅ 디코딩 성공 - \(values.count)개 값: \(values)")
+                return values
+            } else {
+                print("   ❌ 디코딩 실패")
+            }
+        } else {
+            print("   ⚠️ 새 형식 데이터 없음")
+        }
+
+        // 이전 형식 호환성 (마이그레이션)
+        let oldKey = "predefined_\(placeholder)"
+        print("   🔄 이전 형식 시도 - Key: \(oldKey)")
+
+        if let saved = UserDefaults(suiteName: "group.com.hyunho.Token-memo")?.stringArray(forKey: oldKey) {
+            print("   ✅ 이전 형식에서 로드 - \(saved.count)개 값: \(saved)")
+            return saved
+        } else {
+            print("   ⚠️ 이전 형식 데이터도 없음")
+        }
+
+        // 저장된 데이터가 없으면 더미 데이터 반환
+        print("   🎁 더미 데이터 사용")
+        let dummyData = getDummyData(for: placeholder)
+        print("   ✅ 더미 데이터 반환 - \(dummyData.count)개 값: \(dummyData)")
+        return dummyData
+    }
+
+    // 특정 템플릿에서 사용하는 값만 필터링
+    func getValuesForTemplate(placeholder: String, templateId: UUID?) -> [String] {
+        print("\n🔍 [PredefinedValuesStore] getValuesForTemplate 호출")
+        print("   플레이스홀더: \(placeholder)")
+        print("   템플릿 ID: \(templateId?.uuidString ?? "nil")")
+
+        // clipMemos 배열 상태 확인
+        print("   📚 clipMemos 배열: \(clipMemos.count)개")
+        for (index, memo) in clipMemos.enumerated() {
+            print("      [\(index)] ID: \(memo.id.uuidString)")
+            print("          제목: \(memo.title)")
+            print("          플레이스홀더 값 개수: \(memo.placeholderValues.count)")
+            if !memo.placeholderValues.isEmpty {
+                for (key, vals) in memo.placeholderValues {
+                    print("              \(key): \(vals)")
+                }
+            }
+        }
+
+        // 먼저 Memo 객체에서 직접 가져오기 시도
+        if let templateId = templateId {
+            print("   🔎 템플릿 ID로 검색 중: \(templateId.uuidString)")
+
+            if let memo = clipMemos.first(where: { $0.id == templateId }) {
+                print("   ✅ Memo 객체에서 찾음: \(memo.title)")
+                print("      Memo의 모든 플레이스홀더 값: \(memo.placeholderValues)")
+
+                if let values = memo.placeholderValues[placeholder], !values.isEmpty {
+                    print("   ✅ Memo에 저장된 값 발견: \(values)")
+                    return values
+                } else {
+                    print("   ⚠️ Memo에 '\(placeholder)' 값 없음")
+                    print("      사용 가능한 키: \(memo.placeholderValues.keys)")
+                }
+            } else {
+                print("   ❌ templateId로 Memo를 찾을 수 없음!")
+                print("      검색한 ID: \(templateId.uuidString)")
+                print("      clipMemos의 ID들:")
+                for memo in clipMemos {
+                    print("         - \(memo.id.uuidString) (\(memo.title))")
+                }
+            }
+        } else {
+            print("   ⚠️ templateId가 nil입니다")
+        }
+
+        // Memo에 없으면 UserDefaults 확인 (기존 로직)
+        let key = "placeholder_values_\(placeholder)"
+        print("   🔍 UserDefaults 확인 - Key: \(key)")
+
+        if let userDefaults = UserDefaults(suiteName: "group.com.hyunho.Token-memo"),
+           let data = userDefaults.data(forKey: key),
+           let placeholderValues = try? JSONDecoder().decode([KeyboardPlaceholderValue].self, from: data) {
+            print("   ✅ UserDefaults에서 디코딩 성공 - 총 \(placeholderValues.count)개")
+
+            // 템플릿 ID로 필터링
+            if let templateId = templateId {
+                let filtered = placeholderValues.filter { $0.sourceMemoId == templateId }
+                print("   📊 템플릿 ID로 필터링: \(filtered.count)개")
+
+                if !filtered.isEmpty {
+                    let values = filtered.map { $0.value }
+                    print("   ✅ 필터링된 값 반환: \(values)")
+                    return values
+                }
+            }
+
+            // 필터링된 값이 없으면 전체 값 반환
+            let allValues = placeholderValues.map { $0.value }
+            print("   ℹ️ 전체 값 반환: \(allValues)")
+            return allValues
+        }
+
+        // 저장된 데이터가 없으면 더미 데이터 반환
+        print("   🎁 저장된 데이터 없음 - 더미 데이터 사용")
+        return getDummyData(for: placeholder)
+    }
+
+    // 더미 데이터 생성
+    private func getDummyData(for placeholder: String) -> [String] {
+        switch placeholder {
+        case "{이름}":
+            return ["유미", "주디", "리이오"]
+        case "{회사명}":
+            return ["테크코리아", "글로벌인더스트리", "스마트솔루션", "이노베이션", "퓨처테크"]
+        case "{주소}":
+            return ["서울시 강남구", "경기도 성남시", "인천시 남동구", "부산시 해운대구"]
+        case "{전화번호}":
+            return ["010-1234-5678", "010-9876-5432", "010-5555-1234"]
+        case "{이메일}":
+            return ["example@email.com", "user@company.com", "contact@domain.com"]
+        case "{부서}":
+            return ["개발팀", "영업팀", "마케팅팀", "기획팀"]
+        case "{직급}":
+            return ["사원", "대리", "과장", "차장", "부장"]
+        default:
+            return ["샘플1", "샘플2", "샘플3"]
+        }
     }
 }
 
@@ -47,6 +170,12 @@ class TemplateInputState: ObservableObject {
     @Published var inputs: [String: String] = [:]
     @Published var originalText: String = ""
     @Published var currentFocusedPlaceholder: String? = nil
+    @Published var allPlaceholdersFilled: Bool = false
+    @Published var templateId: UUID? = nil  // 현재 편집 중인 템플릿 ID
+
+    func updateAllPlaceholdersFilled() {
+        allPlaceholdersFilled = !inputs.values.contains(where: { $0.isEmpty })
+    }
 }
 
 struct KeyboardView: View {
@@ -142,7 +271,12 @@ struct KeyboardView: View {
                         ForEach(clipKey.indices, id:\.self) { i in
                             Button {
                                 UIImpactFeedbackGenerator().impactOccurred()
-                                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "addTextEntry"), object: clipValue[i])
+                                // 메모 ID 포함해서 알림 전송
+                                NotificationCenter.default.post(
+                                    name: NSNotification.Name(rawValue: "addTextEntry"),
+                                    object: clipValue[i],
+                                    userInfo: ["memoId": clipMemoId[i]]
+                                )
                             } label: {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 10)
@@ -176,10 +310,42 @@ struct KeyboardView: View {
             NotificationCenter.default.addObserver(forName: NSNotification.Name("showTemplateInput"), object: nil, queue: .main) { notification in
                 if let userInfo = notification.userInfo,
                    let text = userInfo["text"] as? String,
-                   let placeholders = userInfo["placeholders"] as? [String] {
+                   let placeholders = userInfo["placeholders"] as? [String],
+                   let memoId = userInfo["memoId"] as? UUID {
+
+                    print("🔍 템플릿 입력 요청 받음")
+                    print("   메모 ID: \(memoId)")
+                    print("   플레이스홀더: \(placeholders)")
+
                     templateInputState.originalText = text
                     templateInputState.placeholders = placeholders
-                    templateInputState.inputs = Dictionary(uniqueKeysWithValues: placeholders.map { ($0, "") })
+                    templateInputState.templateId = memoId  // 템플릿 ID 저장
+
+                    // 저장된 값들 불러오기 - 템플릿별로 필터링하여 첫 번째 값을 기본값으로 설정
+                    var initialInputs: [String: String] = [:]
+
+                    for placeholder in placeholders {
+                        print("   🔍 [KeyboardView] 플레이스홀더 값 로드 시도: \(placeholder)")
+                        // 템플릿 ID로 필터링된 값 로드
+                        let values = PredefinedValuesStore.shared.getValuesForTemplate(placeholder: placeholder, templateId: memoId)
+                        print("   📊 [KeyboardView] \(placeholder): \(values.count)개 - \(values)")
+
+                        if let firstValue = values.first, !firstValue.isEmpty {
+                            initialInputs[placeholder] = firstValue
+                            print("   ✅ [KeyboardView] \(placeholder) 기본값 설정: \(firstValue)")
+                        } else {
+                            initialInputs[placeholder] = ""
+                            print("   ⚠️ [KeyboardView] \(placeholder) 값 없음 - 빈 문자열 설정")
+                        }
+                    }
+
+                    templateInputState.inputs = initialInputs
+                    templateInputState.updateAllPlaceholdersFilled()
+
+                    print("   초기 입력값: \(initialInputs)")
+
+                    // 항상 템플릿 값 선택 UI 표시
+                    print("🎨 템플릿 값 선택 UI 표시")
                     withAnimation {
                         templateInputState.isShowing = true
                     }
@@ -240,12 +406,18 @@ struct TemplateInputOverlay: View {
             // 배경 dimming
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation {
+                        state.isShowing = false
+                        state.currentFocusedPlaceholder = nil
+                    }
+                }
 
             // 입력 카드
             VStack(spacing: 0) {
                 // 헤더
                 HStack {
-                    Text("템플릿 입력")
+                    Text("템플릿 값 선택")
                         .font(.headline)
                         .fontWeight(.semibold)
 
@@ -270,47 +442,61 @@ struct TemplateInputOverlay: View {
                 // 입력 필드들
                 ScrollView {
                     VStack(spacing: 16) {
-                        ForEach(state.placeholders, id: \.self) { placeholder in
-                            PlaceholderInputView(
-                                placeholder: placeholder,
-                                selectedValue: Binding(
-                                    get: { state.inputs[placeholder] ?? "" },
-                                    set: { state.inputs[placeholder] = $0 }
+                        if state.placeholders.isEmpty {
+                            // 플레이스홀더가 없는 경우
+                            VStack(spacing: 12) {
+                                Image(systemName: "questionmark.circle")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.gray)
+
+                                Text("템플릿 변수가 없습니다")
+                                    .font(.headline)
+                                    .foregroundColor(.primary)
+
+                                Text("이 템플릿에는 설정할 값이 없어요.\n다시 시도해주세요.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(40)
+                        } else {
+                            ForEach(state.placeholders, id: \.self) { placeholder in
+                                PlaceholderInputView(
+                                    placeholder: placeholder,
+                                    selectedValue: Binding(
+                                        get: { state.inputs[placeholder] ?? "" },
+                                        set: { newValue in
+                                            state.inputs[placeholder] = newValue
+                                            state.updateAllPlaceholdersFilled()
+                                            // 모든 값이 채워졌으면 자동으로 입력
+                                            if state.allPlaceholdersFilled {
+                                                completeInput()
+                                            }
+                                        }
+                                    ),
+                                    templateId: state.templateId  // 템플릿 ID 전달
                                 )
-                            )
+                            }
+
+                            // 안내 메시지 - 하단으로 이동
+                            HStack(spacing: 8) {
+                                Image(systemName: "info.circle.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.blue)
+
+                                Text("값을 선택하면 자동으로 입력됩니다")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(8)
                         }
                     }
                     .padding()
                 }
-                .background(Color(UIColor.systemBackground))
-
-                Divider()
-
-                // 버튼
-                HStack(spacing: 12) {
-                    Button("취소") {
-                        withAnimation {
-                            state.isShowing = false
-                            state.currentFocusedPlaceholder = nil
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(UIColor.systemGray5))
-                    .foregroundColor(.primary)
-                    .cornerRadius(10)
-
-                    Button("완료") {
-                        completeInput()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(state.inputs.values.contains(where: { $0.isEmpty }) ? Color.gray : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .disabled(state.inputs.values.contains(where: { $0.isEmpty }))
-                }
-                .padding()
                 .background(Color(UIColor.systemBackground))
             }
             .frame(maxWidth: 350, maxHeight: 300)
@@ -341,32 +527,83 @@ struct TemplateInputOverlay: View {
 struct PlaceholderInputView: View {
     let placeholder: String
     @Binding var selectedValue: String
+    let templateId: UUID?  // 템플릿 ID 추가
 
     private var predefinedValues: [String] {
-        PredefinedValuesStore.shared.getValues(for: placeholder)
+        // 템플릿 ID로 필터링된 값 로드
+        let storedValues = PredefinedValuesStore.shared.getValuesForTemplate(placeholder: placeholder, templateId: templateId)
+
+        // 저장된 값이 있으면 반환 (더미 데이터 포함)
+        if !storedValues.isEmpty {
+            return storedValues
+        }
+
+        // 플레이스홀더별 더미 데이터
+        switch placeholder {
+        case "{이름}":
+            return ["유미", "주디", "리이오"]
+        case "{회사명}":
+            return ["테크코리아", "글로벌인더스트리", "스마트솔루션", "이노베이션", "퓨처테크"]
+        case "{주소}":
+            return ["서울시 강남구", "경기도 성남시", "인천시 남동구", "부산시 해운대구"]
+        case "{전화번호}":
+            return ["010-1234-5678", "010-9876-5432", "010-5555-1234"]
+        case "{이메일}":
+            return ["example@email.com", "user@company.com", "contact@domain.com"]
+        case "{부서}":
+            return ["개발팀", "영업팀", "마케팅팀", "기획팀"]
+        case "{직급}":
+            return ["사원", "대리", "과장", "차장", "부장"]
+        default:
+            // 기타 플레이스홀더는 일반 더미 데이터
+            return ["샘플1", "샘플2", "샘플3"]
+        }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(placeholder.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: ""))
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(.secondary)
+            HStack {
+                Text(placeholder.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: ""))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+
+                if !selectedValue.isEmpty {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+            }
 
             if predefinedValues.isEmpty {
-                Text("설정에서 값을 추가하세요")
-                    .font(.caption)
-                    .foregroundColor(.orange)
-                    .padding(12)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(8)
+                VStack(spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                        Text("값이 등록되지 않았습니다")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.orange)
+                    }
+
+                    Text("앱을 열어 플레이스홀더 관리에서\n'\(placeholder.replacingOccurrences(of: "{", with: "").replacingOccurrences(of: "}", with: ""))' 값을 추가해주세요")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(predefinedValues, id: \.self) { value in
                             Button {
                                 selectedValue = value
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             } label: {
                                 Text(value)
                                     .font(.system(size: 14, weight: selectedValue == value ? .semibold : .regular))
@@ -381,6 +618,9 @@ struct PlaceholderInputView: View {
                 }
             }
         }
+        .padding(12)
+        .background(Color(UIColor.systemGray6).opacity(0.5))
+        .cornerRadius(10)
     }
 }
 

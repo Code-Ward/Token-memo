@@ -10,21 +10,35 @@ import SwiftUI
 @main
 struct Token_memoApp: App {
     @ObservedObject var manager = DataManager()
-    
+
+    init() {
+        print("🚀 [APP INIT] Token_memoApp 초기화 시작")
+        print("📱 [APP INIT] DataManager 생성됨")
+    }
+
     var body: some Scene {
         WindowGroup {
             if manager.didShowOnboarding {
+                
                 TokenMemoList()
                     .onOpenURL { url in
                         // URL scheme으로 앱이 열렸을 때 처리
                         if url.scheme == "tokenMemo" {
                             // 키보드에서 앱을 열었을 때 메인 화면으로 이동
-                            print("App opened from keyboard")
+                            print("🔗 [URL] App opened from keyboard")
                         }
                     }
+                    .onAppear() {
+                        print("🎯 [APP BODY] 온보딩 완료 상태 -> TokenMemoList 표시")
+                    }
             } else {
+                
                 ColorfulOnboardingView(pages: OnboardingPages) {
+                    print("✅ [ONBOARDING] 온보딩 완료 -> didShowOnboarding = true")
                     manager.didShowOnboarding = true
+                }
+                .onAppear() {
+                    print("🎯 [APP BODY] 첫 실행 -> 온보딩 화면 표시")
                 }
             }
 
