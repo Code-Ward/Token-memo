@@ -139,11 +139,13 @@ struct ContactView: View {
     }
 }
 
+#if canImport(MessageUI)
 import MessageUI
+
 class EmailController: NSObject, MFMailComposeViewControllerDelegate {
     public static let shared = EmailController()
     private override init() { }
-    
+
     func sendEmail(subject:String, body:String, to:String){
         // Check if the device is able to send emails
         if !MFMailComposeViewController.canSendMail() {
@@ -158,16 +160,33 @@ class EmailController: NSObject, MFMailComposeViewControllerDelegate {
         mailComposer.setMessageBody(body, isHTML: false)
         EmailController.getRootViewController()?.present(mailComposer, animated: true, completion: nil)
     }
-    
+
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         EmailController.getRootViewController()?.dismiss(animated: true, completion: nil)
     }
-    
+
     static func getRootViewController() -> UIViewController? {
         // In SwiftUI 2.0
         UIApplication.shared.windows.first?.rootViewController
     }
 }
+#else
+// macOS fallback - EmailController는 사용하지 않음
+class EmailController: NSObject {
+    public static let shared = EmailController()
+    private override init() { }
+
+    func sendEmail(subject:String, body:String, to:String){
+        // macOS에서는 mailto URL 스킴 사용
+        let urlString = "mailto:\(to)?subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+        if let url = URL(string: urlString) {
+            #if os(macOS)
+            NSWorkspace.shared.open(url)
+            #endif
+        }
+    }
+}
+#endif
 
 struct SettingView_Previews: PreviewProvider {
     static var previews: some View {

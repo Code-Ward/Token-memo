@@ -192,7 +192,9 @@ struct CloudBackupView: View {
             }
         }
         .navigationTitle("iCloud 백업")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .alert(alertTitle, isPresented: $showAlert) {
             Button("확인", role: .cancel) { }
         } message: {
