@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C7C6CDBD08940B2BC4EED19 /* ComboList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7C6CDBD08940B2BC4EED1A /* ComboList.swift */; };
+		256F32EF1054402BBEBAA072 /* ComboExecutionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 256F32EF1054402BBEBAA073 /* ComboExecutionService.swift */; };
 		5802F4102A2B3C91002825D6 /* ClipboardList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5802F40F2A2B3C91002825D6 /* ClipboardList.swift */; };
 		5802F4132A2B8E08002825D6 /* ShortcutMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5802F4122A2B8E08002825D6 /* ShortcutMemoView.swift */; };
 		580B0D692A30C45E00C7B586 /* FontSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580B0D682A30C45E00C7B586 /* FontSetting.swift */; };
@@ -42,8 +44,6 @@
 		58F8FBBF2A127D3C00F5446E /* Memo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F8FBBE2A127D3C00F5446E /* Memo.swift */; };
 		58F8FBC12A13C9A400F5446E /* MemoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F8FBC02A13C9A400F5446E /* MemoStore.swift */; };
 		58F8FBC62A1527C300F5446E /* MemoDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F8FBC52A1527C300F5446E /* MemoDetail.swift */; };
-		1C7C6CDBD08940B2BC4EED19 /* ComboList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7C6CDBD08940B2BC4EED1A /* ComboList.swift */; };
-		256F32EF1054402BBEBAA072 /* ComboExecutionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 256F32EF1054402BBEBAA073 /* ComboExecutionService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +71,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1C7C6CDBD08940B2BC4EED1A /* ComboList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboList.swift; sourceTree = "<group>"; };
+		256F32EF1054402BBEBAA073 /* ComboExecutionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboExecutionService.swift; sourceTree = "<group>"; };
 		5802F40F2A2B3C91002825D6 /* ClipboardList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardList.swift; sourceTree = "<group>"; };
 		5802F4122A2B8E08002825D6 /* ShortcutMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutMemoView.swift; sourceTree = "<group>"; };
 		5802F4142A2B966E002825D6 /* Token-memo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Token-memo-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -107,8 +109,6 @@
 		58F8FBC02A13C9A400F5446E /* MemoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoStore.swift; sourceTree = "<group>"; };
 		58F8FBC52A1527C300F5446E /* MemoDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoDetail.swift; sourceTree = "<group>"; };
 		58FBB90A2ED9AD0B004231BE /* TokenMemo.mac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TokenMemo.mac.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		1C7C6CDBD08940B2BC4EED1A /* ComboList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboList.swift; sourceTree = "<group>"; };
-		256F32EF1054402BBEBAA073 /* ComboExecutionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboExecutionService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -690,7 +690,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ysoup.TokenMemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -731,7 +731,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.Ysoup.TokenMemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
