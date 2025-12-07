@@ -19,21 +19,37 @@ class DataManager: ObservableObject {
     
     @Published var didShowOnboarding: Bool = UserDefaults.standard.bool(forKey: "onboarding") {
         didSet {
+            print("📝 [DataManager] didShowOnboarding 변경: \(didShowOnboarding)")
             UserDefaults.standard.setValue(didShowOnboarding, forKey: "onboarding")
             UserDefaults.standard.synchronize()
         }
     }
-    
+
+    @Published var didShowUseCaseSelection: Bool = UserDefaults.standard.bool(forKey: "useCaseSelection") {
+        didSet {
+            print("📝 [DataManager] didShowUseCaseSelection 변경: \(didShowUseCaseSelection)")
+            UserDefaults.standard.setValue(didShowUseCaseSelection, forKey: "useCaseSelection")
+            UserDefaults.standard.synchronize()
+        }
+    }
+
     static var didRemoveAds: Bool = UserDefaults.standard.bool(forKey: "didRemoveAds") {
         didSet {
+            print("📝 [DataManager] didRemoveAds 변경: \(didRemoveAds)")
             UserDefaults.standard.setValue(didRemoveAds, forKey: "didRemoveAds")
             UserDefaults.standard.synchronize()
         }
     }
-    
+
     /// Fetch saved entries
     init() {
+        print("🔧 [DataManager] init() 시작")
+        let savedOnboarding = UserDefaults.standard.bool(forKey: "onboarding")
+        print("📖 [DataManager] 온보딩 상태 로드: \(savedOnboarding)")
+
         textEntries = UserDefaults(suiteName: AppConfig.appGroup)!.stringArray(forKey: "entries") ?? [String]()
+        print("📖 [DataManager] textEntries 로드 완료: \(textEntries.count)개")
+        print("✅ [DataManager] init() 완료")
     }
     
     /// Save text entries to `UserDefaults`
