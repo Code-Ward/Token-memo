@@ -10,12 +10,19 @@ import SwiftUI
 import UIKit
 #endif
 
+// MARK: - Image Wrapper
+struct ImageWrapper: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
 struct MemoAdd: View {
 
     @State private var keyword: String = ""
     @State private var value: String = ""
     @State private var showAlert: Bool = false
     @State private var showSucessAlert: Bool = false
+    @State private var attachedImages: [ImageWrapper] = [] // 첨부된 이미지들
 
     // 수정 모드용 초기값
     var memoId: UUID? = nil // 수정할 메모의 ID
@@ -77,69 +84,8 @@ struct MemoAdd: View {
 
             ScrollView {
                 VStack(spacing: 28) {
-                    // 📌 1단계: 테마 선택 (가장 먼저!)
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Label("테마 선택", systemImage: "tag.fill")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.accentColor)
-
-                            // 자동 분류 표시
-                            if let detectedType = autoDetectedType {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "sparkles")
-                                        .font(.caption2)
-                                    Text("자동: \(detectedType.rawValue)")
-                                        .font(.caption2)
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(colorFor(detectedType.color).opacity(0.2))
-                                .foregroundColor(colorFor(detectedType.color))
-                                .cornerRadius(8)
-                            }
-                        }
-
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(Constants.themes, id: \.self) { theme in
-                                    Button {
-                                        selectedCategory = theme
-                                    } label: {
-                                        Text(theme)
-                                            .font(.callout)
-                                            .fontWeight(selectedCategory == theme ? .semibold : .regular)
-                                            .padding(.horizontal, 16)
-                                            .padding(.vertical, 8)
-                                            .background(selectedCategory == theme ? Color.accentColor : Color(.systemGray6))
-                                            .foregroundColor(selectedCategory == theme ? .white : .primary)
-                                            .cornerRadius(20)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                    .background(Color.accentColor.opacity(0.05))
-                    .cornerRadius(12)
-
-                    // 📌 2단계: 제목 입력
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("제목")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-
-                        TextField("메모 제목을 입력하세요", text: $keyword)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
-                    }
+                    themeSelectionSection
+                    titleInputSection
 
                     // 📌 3단계: 내용 입력 (테마별 맞춤형)
                     ContentInputSection(
@@ -147,40 +93,12 @@ struct MemoAdd: View {
                         selectedCategory: selectedCategory,
                         isFocused: $isFocused,
                         autoDetectedType: $autoDetectedType,
-                        autoDetectedConfidence: $autoDetectedConfidence
+                        autoDetectedConfidence: $autoDetectedConfidence,
+                        attachedImages: $attachedImages
                     )
                     .toolbar {
                         ToolbarItemGroup(placement: .keyboard) {
-                            // OCR 스캔 버튼
-                            #if os(iOS)
-                            Menu {
-                                Button {
-                                    isFocused = false
-                                    showDocumentScanner = true
-                                } label: {
-                                    Label("문서 스캔", systemImage: "doc.text.viewfinder")
-                                }
-
-                                Button {
-                                    isFocused = false
-                                    showImagePicker = true
-                                } label: {
-                                    Label("사진에서 텍스트 인식", systemImage: "photo")
-                                }
-                            } label: {
-                                Image(systemName: "camera.viewfinder")
-                                    .font(.system(size: 20))
-                            }
-                            #endif
-
-                            // 이모지 버튼
-                            Button {
-                                isFocused = false
-                                showEmojiPicker = true
-                            } label: {
-                                Image(systemName: "face.smiling")
-                                    .font(.system(size: 20))
-                            }
+                            
 
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 8) {
@@ -205,113 +123,8 @@ struct MemoAdd: View {
                         }
                     }
 
-                    // 📌 4단계: 추가 옵션
-                    VStack(spacing: 12) {
-                        HStack {
-                            Image(systemName: isSecure ? "lock.fill" : "lock")
-                                .font(.title3)
-                                .foregroundColor(isSecure ? .orange : .secondary)
-                                .frame(width: 32)
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("보안 메모")
-                                    .font(.callout)
-                                    .fontWeight(.medium)
-                                Text("Face ID로 보호")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Toggle("", isOn: $isSecure)
-                                .labelsHidden()
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-
-                        HStack {
-                            Image(systemName: isTemplate ? "doc.text.fill" : "doc.text")
-                                .font(.title3)
-                                .foregroundColor(isTemplate ? .purple : .secondary)
-                                .frame(width: 32)
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("템플릿")
-                                    .font(.callout)
-                                    .fontWeight(.medium)
-                                Text("재사용 가능한 양식")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Spacer()
-
-                            Toggle("", isOn: $isTemplate)
-                                .labelsHidden()
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-                    }
-
-                    if isTemplate {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "info.circle.fill")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("템플릿 변수는 {날짜}, {시간}, {이름} 형식으로 작성하세요")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("예시")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.secondary)
-
-                                Text("안녕하세요 {이름}님, {날짜} {시간}에 미팅이 예정되어 있습니다.")
-                                    .font(.caption)
-                                    .padding(12)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(8)
-                            }
-                        }
-                        .padding()
-
-                        // 플레이스홀더 값 설정
-                        if !detectedPlaceholders.isEmpty {
-                            VStack(alignment: .leading, spacing: 16) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "list.bullet.rectangle")
-                                        .font(.caption)
-                                        .foregroundColor(.blue)
-                                    Text("플레이스홀더 값 설정")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                }
-
-                                ForEach(detectedPlaceholders, id: \.self) { placeholder in
-                                    PlaceholderValueEditor(
-                                        placeholder: placeholder,
-                                        values: Binding(
-                                            get: { placeholderValues[placeholder] ?? [] },
-                                            set: { placeholderValues[placeholder] = $0 }
-                                        )
-                                    )
-                                }
-                            }
-                            .padding()
-                            .background(Color(.systemGray6).opacity(0.5))
-                            .cornerRadius(12)
-                        }
-                    }
+                    additionalOptionsSection
+                    templateSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
@@ -345,7 +158,7 @@ struct MemoAdd: View {
 
                     Button {
                         if !keyword.isEmpty,
-                           !value.isEmpty {
+                           (!value.isEmpty || !attachedImages.isEmpty) {
                             showSucessAlert = true
                             // success
                             // save
@@ -353,8 +166,28 @@ struct MemoAdd: View {
                                 var loadedMemos:[Memo] = []
                                 loadedMemos = try MemoStore.shared.load(type: .tokenMemo)
 
+                                // 이미지들을 파일로 저장
+                                var savedImageFileNames: [String] = []
+                                #if os(iOS)
+                                for wrapper in attachedImages {
+                                    let fileName = "\(UUID().uuidString).png"
+                                    try MemoStore.shared.saveImage(wrapper.image, fileName: fileName)
+                                    savedImageFileNames.append(fileName)
+                                }
+                                #endif
+
                                 // 템플릿 변수 추출
                                 let variables = extractTemplateVariables(from: value)
+
+                                // 컨텐츠 타입 결정
+                                let contentType: ClipboardContentType
+                                if !value.isEmpty && !savedImageFileNames.isEmpty {
+                                    contentType = .mixed
+                                } else if !savedImageFileNames.isEmpty {
+                                    contentType = .image
+                                } else {
+                                    contentType = .text
+                                }
 
                                 let finalMemoId: UUID
                                 let finalMemoTitle: String
@@ -371,6 +204,8 @@ struct MemoAdd: View {
                                     updatedMemo.isTemplate = isTemplate
                                     updatedMemo.templateVariables = variables
                                     updatedMemo.placeholderValues = placeholderValues
+                                    updatedMemo.imageFileNames = savedImageFileNames
+                                    updatedMemo.contentType = contentType
 
                                     loadedMemos[index] = updatedMemo
                                     finalMemoId = existingId
@@ -387,7 +222,9 @@ struct MemoAdd: View {
                                         isSecure: isSecure,
                                         isTemplate: isTemplate,
                                         templateVariables: variables,
-                                        placeholderValues: placeholderValues
+                                        placeholderValues: placeholderValues,
+                                        imageFileNames: savedImageFileNames,
+                                        contentType: contentType
                                     )
                                     loadedMemos.append(newMemo)
                                     finalMemoId = newMemoId
@@ -433,6 +270,8 @@ struct MemoAdd: View {
             }
             .background(Color(.systemBackground))
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -2)
+            .ignoresSafeArea(.keyboard)
+            .zIndex(100)
         }
         .alert(Constants.insertContents, isPresented: $showAlert) {
             
@@ -541,6 +380,186 @@ struct MemoAdd: View {
                 detectPlaceholders()
             } else {
                 detectedPlaceholders = []
+            }
+        }
+    }
+
+    // MARK: - View Sections
+
+    private var themeSelectionSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("테마 선택", systemImage: "tag.fill")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.accentColor)
+
+                // 자동 분류 표시
+                if let detectedType = autoDetectedType {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                        Text("자동: \(detectedType.rawValue)")
+                            .font(.caption2)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(colorFor(detectedType.color).opacity(0.2))
+                    .foregroundColor(colorFor(detectedType.color))
+                    .cornerRadius(8)
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Constants.themes, id: \.self) { theme in
+                        Button {
+                            selectedCategory = theme
+                        } label: {
+                            Text(theme)
+                                .font(.callout)
+                                .fontWeight(selectedCategory == theme ? .semibold : .regular)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(selectedCategory == theme ? Color.accentColor : Color(.systemGray6))
+                                .foregroundColor(selectedCategory == theme ? .white : .primary)
+                                .cornerRadius(20)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .background(Color.accentColor.opacity(0.05))
+        .cornerRadius(12)
+    }
+
+    private var titleInputSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("제목")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+
+            TextField("메모 제목을 입력하세요", text: $keyword)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+        }
+    }
+
+    private var additionalOptionsSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Image(systemName: isSecure ? "lock.fill" : "lock")
+                    .font(.title3)
+                    .foregroundColor(isSecure ? .orange : .secondary)
+                    .frame(width: 32)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("보안 메모")
+                        .font(.callout)
+                        .fontWeight(.medium)
+                    Text("Face ID로 보호")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $isSecure)
+                    .labelsHidden()
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+
+            HStack {
+                Image(systemName: isTemplate ? "doc.text.fill" : "doc.text")
+                    .font(.title3)
+                    .foregroundColor(isTemplate ? .purple : .secondary)
+                    .frame(width: 32)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("템플릿")
+                        .font(.callout)
+                        .fontWeight(.medium)
+                    Text("재사용 가능한 양식")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: $isTemplate)
+                    .labelsHidden()
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+        }
+    }
+
+    @ViewBuilder
+    private var templateSection: some View {
+        if isTemplate {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("템플릿 변수는 {날짜}, {시간}, {이름} 형식으로 작성하세요")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("예시")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.secondary)
+
+                    Text("안녕하세요 {이름}님, {날짜} {시간}에 미팅이 예정되어 있습니다.")
+                        .font(.caption)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                }
+            }
+            .padding()
+
+            // 플레이스홀더 값 설정
+            if !detectedPlaceholders.isEmpty {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "list.bullet.rectangle")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        Text("플레이스홀더 값 설정")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+
+                    ForEach(detectedPlaceholders, id: \.self) { placeholder in
+                        PlaceholderValueEditor(
+                            placeholder: placeholder,
+                            values: Binding(
+                                get: { placeholderValues[placeholder] ?? [] },
+                                set: { placeholderValues[placeholder] = $0 }
+                            )
+                        )
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6).opacity(0.5))
+                .cornerRadius(12)
             }
         }
     }
@@ -870,6 +889,11 @@ struct ContentInputSection: View {
     @FocusState.Binding var isFocused: Bool
     @Binding var autoDetectedType: ClipboardItemType?
     @Binding var autoDetectedConfidence: Double
+    @Binding var attachedImages: [ImageWrapper]
+
+    @State private var showImagePicker = false
+    @State private var showToast = false
+    @State private var toastMessage = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -881,12 +905,45 @@ struct ContentInputSection: View {
 
                 Spacer()
 
-                // 테마별 힌트
-                Text(placeholderText)
-                    .font(.caption2)
-                    .foregroundColor(.secondary.opacity(0.7))
+                // 이미지 버튼들
+                HStack(spacing: 8) {
+                    // 클립보드에서 이미지 붙여넣기
+                    Button {
+                        pasteImageFromClipboard()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.caption)
+                            Text("붙여넣기")
+                                .font(.caption2)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.purple.opacity(0.1))
+                        .foregroundColor(.purple)
+                        .cornerRadius(6)
+                    }
+
+                    // 파일에서 이미지 선택
+                    Button {
+                        showImagePicker = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "photo")
+                                .font(.caption)
+                            Text("사진")
+                                .font(.caption2)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(6)
+                    }
+                }
             }
 
+            // 텍스트 입력 영역
             ZStack(alignment: .topLeading) {
                 if value.isEmpty {
                     Text(placeholderText)
@@ -914,6 +971,100 @@ struct ContentInputSection: View {
                         }
                     }
             }
+
+            // 첨부된 이미지들 미리보기
+            if !attachedImages.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.caption)
+                            .foregroundColor(.purple)
+                        Text("첨부 이미지 (\(attachedImages.count))")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.purple)
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(attachedImages) { wrapper in
+                                ImageAttachmentView(
+                                    image: wrapper.image,
+                                    onRemove: {
+                                        withAnimation {
+                                            attachedImages.removeAll { $0.id == wrapper.id }
+                                        }
+                                    },
+                                    onCopy: {
+                                        copyImageToClipboard(wrapper.image)
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                .padding(.top, 8)
+            }
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePickerView { image in
+                if let image = image {
+                    withAnimation {
+                        attachedImages.append(ImageWrapper(image: image))
+                    }
+                }
+            }
+        }
+        .overlay(
+            // Toast 메시지
+            VStack {
+                if showToast {
+                    Text(toastMessage)
+                        .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.black.opacity(0.8))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .padding(.top, 8)
+                }
+                Spacer()
+            }
+            .animation(.easeInOut, value: showToast)
+        )
+    }
+
+    // 클립보드에서 이미지 붙여넣기
+    private func pasteImageFromClipboard() {
+        #if os(iOS)
+        if let image = UIPasteboard.general.image {
+            withAnimation {
+                attachedImages.append(ImageWrapper(image: image))
+            }
+            showToastMessage("이미지를 추가했습니다")
+        } else {
+            showToastMessage("클립보드에 이미지가 없습니다")
+        }
+        #endif
+    }
+
+    // 이미지 클립보드에 복사
+    private func copyImageToClipboard(_ image: UIImage) {
+        #if os(iOS)
+        UIPasteboard.general.image = image
+        showToastMessage("이미지를 복사했습니다")
+        #endif
+    }
+
+    // Toast 메시지 표시
+    private func showToastMessage(_ message: String) {
+        toastMessage = message
+        showToast = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showToast = false
         }
     }
 
@@ -1293,6 +1444,60 @@ struct DocumentCameraView: UIViewControllerRepresentable {
                 self.completion(.failure(error))
             }
         }
+    }
+}
+
+// MARK: - Image Attachment View
+struct ImageAttachmentView: View {
+    let image: UIImage
+    let onRemove: () -> Void
+    let onCopy: () -> Void
+
+    @State private var isPressed = false
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            // 이미지
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 100, height: 100)
+                .clipped()
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                )
+
+            // 버튼들
+            VStack(spacing: 4) {
+                // 삭제 버튼
+                Button {
+                    onRemove()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                        .background(Circle().fill(Color.red).frame(width: 20, height: 20))
+                }
+
+                // 복사 버튼
+                Button {
+                    onCopy()
+                } label: {
+                    Image(systemName: "doc.on.doc.fill")
+                        .font(.caption)
+                        .foregroundStyle(.white)
+                        .background(Circle().fill(Color.blue).frame(width: 20, height: 20))
+                }
+            }
+            .padding(4)
+        }
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .onLongPressGesture(minimumDuration: 0.1, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
     }
 }
 

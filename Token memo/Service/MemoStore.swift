@@ -348,6 +348,67 @@ class MemoStore: ObservableObject {
         return removedArray
     }
 
+    // MARK: - 이미지 관리
+
+    #if os(iOS)
+    /// 이미지 저장
+    func saveImage(_ image: UIImage, fileName: String) throws {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ysoup.TokenMemo") else {
+            throw NSError(domain: "MemoStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "App Group 컨테이너를 찾을 수 없음"])
+        }
+
+        let imagesDirectory = containerURL.appendingPathComponent("Images")
+
+        // Images 디렉토리 생성
+        if !FileManager.default.fileExists(atPath: imagesDirectory.path) {
+            try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true, attributes: nil)
+        }
+
+        let fileURL = imagesDirectory.appendingPathComponent(fileName)
+
+        // PNG 데이터로 변환하여 저장
+        guard let imageData = image.pngData() else {
+            throw NSError(domain: "MemoStore", code: 2, userInfo: [NSLocalizedDescriptionKey: "이미지를 PNG로 변환할 수 없음"])
+        }
+
+        try imageData.write(to: fileURL)
+        print("✅ [MemoStore] 이미지 저장 완료: \(fileName)")
+    }
+
+    /// 이미지 로드
+    func loadImage(fileName: String) -> UIImage? {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ysoup.TokenMemo") else {
+            print("❌ [MemoStore] App Group 컨테이너를 찾을 수 없음")
+            return nil
+        }
+
+        let imagesDirectory = containerURL.appendingPathComponent("Images")
+        let fileURL = imagesDirectory.appendingPathComponent(fileName)
+
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            print("⚠️ [MemoStore] 이미지 파일이 존재하지 않음: \(fileName)")
+            return nil
+        }
+
+        return UIImage(contentsOfFile: fileURL.path)
+    }
+
+    /// 이미지 삭제
+    func deleteImage(fileName: String) throws {
+        guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.Ysoup.TokenMemo") else {
+            throw NSError(domain: "MemoStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "App Group 컨테이너를 찾을 수 없음"])
+        }
+
+        let imagesDirectory = containerURL.appendingPathComponent("Images")
+        let fileURL = imagesDirectory.appendingPathComponent(fileName)
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            try FileManager.default.removeItem(at: fileURL)
+            print("✅ [MemoStore] 이미지 삭제 완료: \(fileName)")
+        }
+    }
+    #endif
+
     // MARK: - 플레이스홀더 값 관리
 
     // 플레이스홀더의 모든 값 불러오기
