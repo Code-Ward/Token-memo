@@ -138,7 +138,10 @@ class CloudKitBackupService: ObservableObject {
             record["memos"] = memosData as CKRecordValue
             record["clipboardHistory"] = clipboardData as CKRecordValue
             record["backupDate"] = Date() as CKRecordValue
-            record["version"] = "1.0.0" as CKRecordValue
+
+            // 앱 버전을 Info.plist에서 자동으로 가져오기
+            let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+            record["version"] = appVersion as CKRecordValue
 
             // 5. 저장
             _ = try await privateDatabase.save(record)

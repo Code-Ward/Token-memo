@@ -20,6 +20,8 @@ struct Constants {
 
     // 통합 테마 시스템 - ClipboardItemType 기반
     static let themes = [
+        "텍스트",
+        "이미지",
         "이메일",
         "전화번호",
         "주소",
@@ -34,8 +36,7 @@ struct Constants {
         "주민등록번호",
         "사업자등록번호",
         "차량번호",
-        "IP주소",
-        "텍스트"
+        "IP주소"
     ]
 
     // 하위 호환성을 위한 별칭

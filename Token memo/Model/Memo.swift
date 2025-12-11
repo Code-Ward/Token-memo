@@ -30,6 +30,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
     case businessNumber = "사업자등록번호"
     case vehiclePlate = "차량번호"
     case ipAddress = "IP주소"
+    case image = "이미지"
     case text = "텍스트"
 
     var icon: String {
@@ -49,6 +50,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
         case .businessNumber: return "building.2.fill"
         case .vehiclePlate: return "car.fill"
         case .ipAddress: return "network"
+        case .image: return "photo.fill"
         case .text: return "doc.text"
         }
     }
@@ -70,6 +72,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
         case .businessNumber: return "blue"
         case .vehiclePlate: return "green"
         case .ipAddress: return "purple"
+        case .image: return "pink"
         case .text: return "gray"
         }
     }

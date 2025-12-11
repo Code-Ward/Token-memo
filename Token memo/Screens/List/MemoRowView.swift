@@ -13,12 +13,13 @@ struct MemoRowView: View {
     let fontSize: CGFloat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label(memo.title,
-                  systemImage: memo.isChecked ? "checkmark.square.fill" : "doc.on.doc.fill")
-            .font(.system(size: fontSize))
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Label(memo.title,
+                      systemImage: memo.isChecked ? "checkmark.square.fill" : "doc.on.doc.fill")
+                .font(.system(size: fontSize))
 
-            HStack(spacing: 8) {
+                HStack(spacing: 8) {
                 // 자동 분류 타입 표시 (우선순위)
                 if let detectedType = memo.autoDetectedType {
                     HStack(spacing: 4) {
@@ -60,6 +61,25 @@ struct MemoRowView: View {
                         .foregroundColor(.purple)
                 }
 
+                }
+            }
+
+            // 이미지 썸네일 (이미지 메모인 경우)
+            if (memo.contentType == .image || memo.contentType == .mixed),
+               let firstImageFileName = memo.imageFileNames.first {
+                #if os(iOS)
+                if let thumbnailImage = MemoStore.shared.loadImage(fileName: firstImageFileName) {
+                    Image(uiImage: thumbnailImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 50)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                #endif
             }
         }
     }

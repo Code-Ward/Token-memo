@@ -62,27 +62,155 @@ struct SettingView: View {
                     Text("개발자에게 연락하기")
                 }
             }
+
+            Section("앱 정보") {
+                HStack {
+                    Text("버전")
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text(appVersion)
+                        .foregroundColor(.primary)
+                }
+            }
         }
+    }
+
+    // 앱 버전 정보를 Info.plist에서 자동으로 가져오기
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
     }
 }
 
 struct CopyPasteView: View {
-    
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        VStack {
-            Button("Open Web Page") {
-                
-            }
-            .onAppear(perform: {
-                dismiss()
 
-                if let url = URL.init(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    var body: some View {
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("📋 붙여넣기 허용 설정")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+
+                    Text("앱 실행 시 '붙여넣기 허용' 팝업이 뜬 경우, 아래 경로로 설정을 변경할 수 있습니다.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
-            })
+                .padding(.vertical, 8)
+            }
+
+            Section(header: Text("설정 경로")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "gear")
+                            .foregroundColor(.blue)
+                        Text("설정")
+                            .fontWeight(.medium)
+                    }
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.leading, 8)
+
+                    HStack(spacing: 8) {
+                        Image(systemName: "app.fill")
+                            .foregroundColor(.blue)
+                        Text("클립 키보드")
+                            .fontWeight(.medium)
+                    }
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .padding(.leading, 8)
+
+                    HStack(spacing: 8) {
+                        Image(systemName: "doc.on.clipboard")
+                            .foregroundColor(.blue)
+                        Text("다른 앱에서 붙여넣기")
+                            .fontWeight(.medium)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+
+            Section(header: Text("옵션 설명")) {
+                VStack(alignment: .leading, spacing: 16) {
+                    // 묻기
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundColor(.orange)
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("묻기")
+                                .font(.headline)
+                            Text("복사/붙여넣기 시 매번 팝업이 표시됩니다.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Divider()
+
+                    // 거부
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("거부")
+                                .font(.headline)
+                            Text("자동 붙여넣기가 차단됩니다. 하지만 길게 눌러서 수동으로 붙여넣기는 가능합니다.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Divider()
+
+                    // 허용 (권장)
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.title3)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("허용")
+                                    .font(.headline)
+                                Text("(권장)")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.green.opacity(0.2))
+                                    .cornerRadius(4)
+                            }
+                            Text("팝업 없이 복사한 텍스트를 바로 확인하고 붙여넣을 수 있습니다. 클립보드 자동 분류 기능을 사용하려면 이 옵션을 권장합니다.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+
+            Section {
+                Button(action: {
+                    if let url = URL.init(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "gear")
+                        Text("설정으로 이동")
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app")
+                    }
+                }
+            }
         }
+        .navigationTitle("붙여넣기 알림 설정")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

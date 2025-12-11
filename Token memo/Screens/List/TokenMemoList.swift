@@ -30,11 +30,15 @@ struct TokenMemoList: View {
     @State private var clipboardConfidence: Double = 0.0
 
     @State private var searchQueryString = ""
+    @State private var isSearchBarVisible = false
 
     // 보안 관련
     @State private var showAuthAlert = false
     @State private var selectedCategoryFilter: String? = nil
     @State private var selectedTypeFilter: ClipboardItemType? = nil
+
+    // UserDefaults 키
+    private let selectedFilterKey = "selectedTypeFilter"
 
     // 템플릿 입력 관련
     @State private var showTemplateInputSheet = false
@@ -50,17 +54,48 @@ struct TokenMemoList: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // 타입 필터 바
-                typeFilterBarSection
-
-                // 메모 리스트
-                memoListSection
-                    .listRowInsets(EdgeInsets(top: 15, leading: 0, bottom: 0, trailing: 0))
-
-                .toolbar {
-                    toolbarContent
+            List {
+                // 검색 바 섹션 (조건부 표시)
+                if isSearchBarVisible {
+                    Section {
+                        searchBarInlineSection
+                    }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
+
+                // 타입 필터 바 섹션
+                if !loadedData.isEmpty {
+                    Section {
+                        typeFilterBarInlineSection
+                    }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
+                // 메모 리스트 섹션
+                Section {
+                    // 빈 리스트 표시
+                    if tokenMemos.isEmpty {
+                        emptyListRow
+                    }
+
+                    // 메모 목록
+                    ForEach($tokenMemos) { $memo in
+                        memoRow(memo: $memo)
+                    }
+                    .onDelete(perform: deleteMemo)
+
+                    // 새 메모 추가 버튼
+                    addMemoRow
+                }
+            }
+            .listStyle(PlainListStyle())
+            .toolbar {
+                toolbarContent
             }
             // Toast 메시지 오버레이
             .overlay(alignment: .bottom) {
@@ -73,15 +108,12 @@ struct TokenMemoList: View {
             #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
             #endif
-            // 검색 바
-            .searchable(
-                text: $searchQueryString,
-                placement: .automatic,
-                prompt: "검색"
-            )
             // 검색 및 필터 변경 감지
             .onChange(of: searchQueryString, perform: { _ in applyFilters() })
-            .onChange(of: selectedTypeFilter, perform: { _ in applyFilters() })
+            .onChange(of: selectedTypeFilter, perform: { _ in
+                applyFilters()
+                saveSelectedFilter()
+            })
             // 인증 실패 Alert
             .alert("인증 실패", isPresented: $showAuthAlert) {
                 Button("확인", role: .cancel) {}
@@ -117,6 +149,9 @@ struct TokenMemoList: View {
             .onAppear {
                 print("🎬 [TokenMemoList] onAppear 시작")
 
+                // 저장된 필터 타입 로드
+                loadSavedFilter()
+
                 // load
                 do {
                     print("📂 [TokenMemoList] 메모 로드 시작...")
@@ -135,6 +170,9 @@ struct TokenMemoList: View {
 
                     // 기존 메모 자동 분류 마이그레이션
                     migrateExistingMemosClassification()
+
+                    // 필터 적용
+                    applyFilters()
 
                 } catch {
                     print("❌ [TokenMemoList] 메모 로드 실패: \(error.localizedDescription)")
@@ -178,31 +216,39 @@ struct TokenMemoList: View {
 
     // MARK: - View Sections
 
-    /// 타입 필터 바 섹션
-    @ViewBuilder
-    private var typeFilterBarSection: some View {
-        if !loadedData.isEmpty {
-            MemoTypeFilterBar(selectedFilter: $selectedTypeFilter, memos: loadedData)
+    /// 검색 바 섹션 (인라인)
+    private var searchBarInlineSection: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+                .font(.system(size: 16))
+
+            TextField("검색", text: $searchQueryString)
+                .textFieldStyle(PlainTextFieldStyle())
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+
+            if !searchQueryString.isEmpty {
+                Button(action: {
+                    searchQueryString = ""
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                        .font(.system(size: 16))
+                }
+            }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 
-    /// 메모 리스트 섹션
-    private var memoListSection: some View {
-        List {
-            // 빈 리스트 표시
-            if tokenMemos.isEmpty {
-                emptyListRow
-            }
-
-            // 메모 목록
-            ForEach($tokenMemos) { $memo in
-                memoRow(memo: $memo)
-            }
-            .onDelete(perform: deleteMemo)
-
-            // 새 메모 추가 버튼
-            addMemoRow
-        }
+    /// 타입 필터 바 섹션 (인라인)
+    private var typeFilterBarInlineSection: some View {
+        MemoTypeFilterBar(selectedFilter: $selectedTypeFilter, memos: loadedData)
     }
 
     /// 빈 리스트 행
@@ -303,6 +349,17 @@ struct TokenMemoList: View {
     /// Toolbar 버튼들 (iOS/macOS 공통)
     @ViewBuilder
     private var toolbarButtons: some View {
+        Button {
+            withAnimation {
+                isSearchBarVisible.toggle()
+                if !isSearchBarVisible {
+                    searchQueryString = ""
+                }
+            }
+        } label: {
+            Image(systemName: isSearchBarVisible ? "magnifyingglass.circle.fill" : "magnifyingglass")
+        }
+
         NavigationLink {
             ClipboardList()
         } label: {
@@ -373,6 +430,29 @@ struct TokenMemoList: View {
     }
 
     // MARK: - Helper Functions
+
+    /// UserDefaults에서 저장된 필터 타입 로드
+    private func loadSavedFilter() {
+        if let savedFilterRawValue = UserDefaults.standard.string(forKey: selectedFilterKey),
+           let savedFilter = ClipboardItemType(rawValue: savedFilterRawValue) {
+            selectedTypeFilter = savedFilter
+            print("📌 [loadSavedFilter] 저장된 필터 로드: \(savedFilter.rawValue)")
+        } else {
+            selectedTypeFilter = nil
+            print("📌 [loadSavedFilter] 저장된 필터 없음 - 전체 표시")
+        }
+    }
+
+    /// UserDefaults에 선택된 필터 타입 저장
+    private func saveSelectedFilter() {
+        if let filter = selectedTypeFilter {
+            UserDefaults.standard.set(filter.rawValue, forKey: selectedFilterKey)
+            print("💾 [saveSelectedFilter] 필터 저장: \(filter.rawValue)")
+        } else {
+            UserDefaults.standard.removeObject(forKey: selectedFilterKey)
+            print("💾 [saveSelectedFilter] 필터 초기화 (전체)")
+        }
+    }
 
     /// 즐겨찾기 토글
     private func toggleFavorite(memo: Binding<Memo>) {
@@ -558,12 +638,35 @@ struct TokenMemoList: View {
     }
 
     private func finalizeCopy(memo: Memo, processedValue: String) {
+        #if os(iOS)
+        // 이미지 메모인 경우 이미지를 클립보드에 복사
+        if memo.contentType == .image || memo.contentType == .mixed {
+            if let firstImageFileName = memo.imageFileNames.first,
+               let image = MemoStore.shared.loadImage(fileName: firstImageFileName) {
+                UIPasteboard.general.image = image
+                print("✅ [finalizeCopy] 이미지를 클립보드에 복사: \(firstImageFileName)")
+
+                // 텍스트도 있으면 함께 복사
+                if !processedValue.isEmpty && memo.contentType == .mixed {
+                    UIPasteboard.general.string = processedValue
+                }
+            }
+        } else {
+            // 텍스트만 있는 경우
+            UIPasteboard.general.string = processedValue
+        }
+        #else
         UIPasteboard.general.string = processedValue
+        #endif
 
         // 사용 빈도 증가
         do {
             try MemoStore.shared.incrementClipCount(for: memo.id)
-            try MemoStore.shared.addToSmartClipboardHistory(content: processedValue)  // ✨ 자동 분류!
+
+            // 이미지가 아닌 경우에만 클립보드 히스토리에 추가
+            if memo.contentType != .image {
+                try MemoStore.shared.addToSmartClipboardHistory(content: processedValue)
+            }
 
             // UI 업데이트를 위해 데이터 리로드
             let allMemos = try MemoStore.shared.load(type: .tokenMemo)
@@ -575,7 +678,9 @@ struct TokenMemoList: View {
             print("Error incrementing clip count: \(error)")
         }
 
-        showToast(message: processedValue)
+        // Toast 메시지
+        let message = memo.contentType == .image ? "이미지" : processedValue
+        showToast(message: message)
     }
 
     private func extractCustomPlaceholders(from text: String) -> [String] {
@@ -661,9 +766,9 @@ struct TokenMemoList: View {
             filtered = filtered.filter { $0.title.localizedStandardContains(searchQueryString) }
         }
 
-        // 타입 필터
+        // 테마 필터 (메모에 설정된 category 기준)
         if let typeFilter = selectedTypeFilter {
-            filtered = filtered.filter { $0.autoDetectedType == typeFilter }
+            filtered = filtered.filter { $0.category == typeFilter.rawValue }
         }
 
         tokenMemos = filtered
@@ -683,15 +788,28 @@ struct MemoTypeFilterBar: View {
     @Binding var selectedFilter: ClipboardItemType?
     let memos: [Memo]
 
+    // 메모에 설정된 category(테마) 기준으로 개수 계산
     var typeCounts: [ClipboardItemType: Int] {
-        Dictionary(grouping: memos.compactMap { $0.autoDetectedType }, by: { $0 })
-            .mapValues { $0.count }
+        var counts: [ClipboardItemType: Int] = [:]
+        for type in ClipboardItemType.allCases {
+            counts[type] = memos.filter { $0.category == type.rawValue }.count
+        }
+        return counts
+    }
+
+    // 개수가 많은 순서대로 타입 정렬
+    var sortedTypes: [ClipboardItemType] {
+        ClipboardItemType.allCases.sorted { type1, type2 in
+            let count1 = typeCounts[type1, default: 0]
+            let count2 = typeCounts[type2, default: 0]
+            return count1 > count2
+        }
     }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                // 전체 버튼
+            HStack(spacing: 4) {
+                // 전체 버튼 (항상 첫 번째)
                 MemoFilterChip(
                     title: "전체",
                     icon: "list.bullet",
@@ -701,8 +819,8 @@ struct MemoTypeFilterBar: View {
                     selectedFilter = nil
                 }
 
-                // 타입별 필터 (개수가 있는 것만)
-                ForEach(ClipboardItemType.allCases.filter { typeCounts[$0, default: 0] > 0 }, id: \.self) { type in
+                // 타입별 필터 (개수가 많은 순서대로 정렬)
+                ForEach(sortedTypes, id: \.self) { type in
                     MemoFilterChip(
                         title: type.rawValue,
                         icon: type.icon,
@@ -714,10 +832,10 @@ struct MemoTypeFilterBar: View {
                     }
                 }
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
-        .background(Color(.systemGray6))
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -731,25 +849,49 @@ struct MemoFilterChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.caption)
+                    .font(.system(size: 13))
+                    .fontWeight(isSelected ? .semibold : .regular)
                 Text(title)
-                    .font(.caption)
-                    .fontWeight(isSelected ? .bold : .regular)
+                    .font(.system(size: 13))
+                    .fontWeight(isSelected ? .semibold : .regular)
                 Text("\(count)")
-                    .font(.caption2)
-                    .padding(.horizontal, 4)
+                    .font(.system(size: 11))
+                    .fontWeight(isSelected ? .bold : .medium)
+                    .padding(.horizontal, 5)
                     .padding(.vertical, 2)
-                    .background(isSelected ? Color.white.opacity(0.3) : Color.gray.opacity(0.2))
-                    .cornerRadius(4)
+                    .background(
+                        isSelected
+                            ? Color.white.opacity(0.25)
+                            : Color.black.opacity(0.1)
+                    )
+                    .cornerRadius(8)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? colorFor(color) : Color.gray.opacity(0.2))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(20)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(isSelected ? colorFor(color) : Color(.systemGray4))
+                    .shadow(
+                        color: isSelected ? colorFor(color).opacity(0.3) : Color.clear,
+                        radius: 4,
+                        x: 0,
+                        y: 2
+                    )
+            )
+            .foregroundColor(isSelected ? .white : Color(.systemGray))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .strokeBorder(
+                        isSelected ? Color.white.opacity(0.2) : Color.clear,
+                        lineWidth: 1
+                    )
+            )
+            .scaleEffect(isSelected ? 1.0 : 0.96)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 
     private func colorFor(_ name: String) -> Color {
