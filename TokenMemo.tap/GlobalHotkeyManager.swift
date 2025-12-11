@@ -1,6 +1,6 @@
 //
 //  GlobalHotkeyManager.swift
-//  TokenMemo.mac
+//  TokenMemo.tap
 //
 //  Created by Claude on 2025-11-28.
 //
@@ -24,13 +24,13 @@ class GlobalHotkeyManager {
             print("✅ [Global Hotkey] 접근성 권한이 허용되어 있습니다")
         } else {
             print("⚠️ [Global Hotkey] 접근성 권한이 필요합니다!")
-            print("💡 시스템 설정 > 개인 정보 보호 및 보안 > 손쉬운 사용 에서 TokenMemo.mac을 활성화하세요")
+            print("💡 시스템 설정 > 개인 정보 보호 및 보안 > 손쉬운 사용 에서 TokenMemo.tap을 활성화하세요")
 
             // 접근성 설정 열기
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 let alert = NSAlert()
                 alert.messageText = "접근성 권한 필요"
-                alert.informativeText = "전역 단축키를 사용하려면 접근성 권한이 필요합니다.\n\n시스템 설정 > 개인 정보 보호 및 보안 > 손쉬운 사용 에서 TokenMemo.mac을 활성화하세요."
+                alert.informativeText = "전역 단축키를 사용하려면 접근성 권한이 필요합니다.\n\n시스템 설정 > 개인 정보 보호 및 보안 > 손쉬운 사용 에서 TokenMemo.tap을 활성화하세요."
                 alert.alertStyle = .warning
                 alert.addButton(withTitle: "시스템 설정 열기")
                 alert.addButton(withTitle: "나중에")

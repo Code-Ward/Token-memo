@@ -1,6 +1,6 @@
 //
 //  ClipboardHistoryView.swift
-//  TokenMemo.mac
+//  TokenMemo.tap
 //
 //  Created by Claude on 2025-11-28.
 //

@@ -1,6 +1,6 @@
 //
 //  TokenMemo_macApp.swift
-//  TokenMemo.mac
+//  TokenMemo.tap
 //
 //  Created by hyunho lee on 11/28/25.
 //
@@ -62,7 +62,7 @@ struct TokenMemo_macApp: App {
 // App Delegate
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("🚀 [APP] TokenMemo.mac 시작")
+        print("🚀 [APP] TokenMemo.tap 시작")
 
         // 기본 창 숨기기 (메뉴바 앱으로 동작)
         NSApp.setActivationPolicy(.accessory)

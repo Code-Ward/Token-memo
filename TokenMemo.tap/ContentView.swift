@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  TokenMemo.mac
+//  TokenMemo.tap
 //
 //  Created by hyunho lee on 11/28/25.
 //
