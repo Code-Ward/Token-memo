@@ -104,7 +104,11 @@ struct MemoListView: View {
                     List {
                         ForEach(filteredMemos) { memo in
                             CompactMemoItemRow(memo: memo) {
-                                copyToClipboard(memo.value)
+                                if memo.contentType == .image {
+                                    copyImageToClipboard(memo)
+                                } else {
+                                    copyToClipboard(memo.value)
+                                }
                             }
                         }
                     }
@@ -158,6 +162,19 @@ struct MemoListView: View {
         NSPasteboard.general.setString(text, forType: .string)
         print("✅ [MemoListView] copyToClipboard - 클립보드 복사 완료")
     }
+
+    private func copyImageToClipboard(_ memo: Memo) {
+        guard let imageFileName = memo.imageFileName,
+              let image = MemoStore.shared.loadImage(fileName: imageFileName) else {
+            print("❌ [MemoListView] 이미지 로드 실패")
+            return
+        }
+
+        print("📸 [MemoListView] copyImageToClipboard - 이미지 클립보드 복사 시작")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects([image])
+        print("✅ [MemoListView] copyImageToClipboard - 이미지 클립보드 복사 완료")
+    }
 }
 
 // MARK: - Compact Memo Item Row
@@ -171,9 +188,11 @@ struct CompactMemoItemRow: View {
     var body: some View {
         HStack(spacing: 6) {
             // 아이콘
-            Image(systemName: memo.isFavorite ? "star.fill" :
+            Image(systemName: memo.contentType == .image ? "photo" :
+                  memo.isFavorite ? "star.fill" :
                   memo.isSecure ? "lock.fill" : "doc.text")
-                .foregroundStyle(memo.isFavorite ? .yellow : .blue)
+                .foregroundStyle(memo.contentType == .image ? .purple :
+                                memo.isFavorite ? .yellow : .blue)
                 .font(.caption)
                 .frame(width: 16)
 
@@ -188,16 +207,51 @@ struct CompactMemoItemRow: View {
                     Spacer()
 
                     if isHovering {
-                        Image(systemName: "doc.on.doc")
+                        Image(systemName: memo.contentType == .image ? "photo" : "doc.on.doc")
                             .font(.caption2)
                             .foregroundStyle(.blue)
                     }
                 }
 
-                Text(memo.value)
-                    .font(.system(size: 10))
-                    .lineLimit(1)
-                    .foregroundStyle(.secondary)
+                if memo.contentType == .image || memo.contentType == .mixed {
+                    // 이미지 미리보기
+                    let imageFileNames = memo.imageFileNames.isEmpty && memo.imageFileName != nil
+                        ? [memo.imageFileName!]
+                        : memo.imageFileNames
+
+                    if !imageFileNames.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(Array(imageFileNames.prefix(3).enumerated()), id: \.offset) { index, fileName in
+                                if let image = MemoStore.shared.loadImage(fileName: fileName) {
+                                    Image(nsImage: image)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 30, height: 30)
+                                        .clipped()
+                                        .cornerRadius(4)
+                                }
+                            }
+
+                            if imageFileNames.count > 3 {
+                                Text("+\(imageFileNames.count - 3)")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    if memo.contentType == .mixed && !memo.value.isEmpty {
+                        Text(memo.value)
+                            .font(.system(size: 10))
+                            .lineLimit(1)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    Text(memo.value)
+                        .font(.system(size: 10))
+                        .lineLimit(1)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding(.vertical, 4)

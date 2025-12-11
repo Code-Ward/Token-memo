@@ -87,8 +87,13 @@ struct ClipboardHistoryView: View {
                         ForEach(filteredHistory) { item in
                             ClipboardItemRow(item: item) {
                                 // 클립보드에 복사
-                                copyToClipboard(item.content)
-                                showToast(message: item.content)
+                                if item.contentType == .image {
+                                    copyImageToClipboard(item)
+                                    showToast(message: "이미지")
+                                } else {
+                                    copyToClipboard(item.content)
+                                    showToast(message: item.content)
+                                }
                             } onSave: {
                                 // 메모로 저장
                                 saveToMemo(item)
@@ -164,6 +169,17 @@ struct ClipboardHistoryView: View {
         NSPasteboard.general.setString(text, forType: .string)
     }
 
+    private func copyImageToClipboard(_ item: ClipboardHistory) {
+        guard let imageFileName = item.imageFileName,
+              let image = MemoStore.shared.loadImage(fileName: imageFileName) else {
+            print("❌ [ClipboardHistory] 이미지 로드 실패")
+            return
+        }
+
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects([image])
+    }
+
     private func showToast(message: String) {
         let preview = message.prefix(30)
         toastMessage = "[\(preview)\(message.count > 30 ? "..." : "")] 클립보드에 복사되었습니다"
@@ -198,9 +214,11 @@ struct ClipboardHistoryView: View {
         do {
             var memos = try MemoStore.shared.load(type: .tokenMemo)
             let newMemo = Memo(
-                title: String(item.content.prefix(30)),
+                title: item.contentType == .image ? "이미지" : String(item.content.prefix(30)),
                 value: item.content,
-                lastEdited: Date()
+                lastEdited: Date(),
+                imageFileName: item.imageFileName,
+                contentType: item.contentType
             )
             memos.append(newMemo)
             try MemoStore.shared.save(memos: memos, type: .tokenMemo)
@@ -233,10 +251,31 @@ struct ClipboardItemRow: View {
         HStack(spacing: 12) {
             // 콘텐츠
             VStack(alignment: .leading, spacing: 6) {
-                Text(item.content)
-                    .font(.system(size: 14))
-                    .lineLimit(3)
-                    .foregroundStyle(.primary)
+                if item.contentType == .image {
+                    // 이미지 표시
+                    if let imageFileName = item.imageFileName,
+                       let image = MemoStore.shared.loadImage(fileName: imageFileName) {
+                        Image(nsImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 200, maxHeight: 150)
+                            .cornerRadius(8)
+                    } else {
+                        HStack(spacing: 8) {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.secondary)
+                            Text("이미지를 불러올 수 없습니다")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } else {
+                    // 텍스트 표시
+                    Text(item.content)
+                        .font(.system(size: 14))
+                        .lineLimit(3)
+                        .foregroundStyle(.primary)
+                }
 
                 HStack(spacing: 12) {
                     HStack(spacing: 4) {
@@ -253,6 +292,15 @@ struct ClipboardItemRow: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.orange.opacity(0.2))
+                            .cornerRadius(4)
+                    }
+
+                    if item.contentType == .image {
+                        Text("이미지")
+                            .font(.caption)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.2))
                             .cornerRadius(4)
                     }
                 }

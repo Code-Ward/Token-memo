@@ -256,12 +256,11 @@
 		58F8FBC42A15278100F5446E /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				9C994AE32EEA97F500FBC8F6 /* Memo */,
 				5802F4112A2B42D3002825D6 /* Component */,
 				58C473682A10C9A0009D87BC /* TokenMemoList.swift */,
 				5802F40F2A2B3C91002825D6 /* ClipboardList.swift */,
 				1C7C6CDBD08940B2BC4EED1A /* ComboList.swift */,
-				58F8FBBC2A127B3000F5446E /* MemoAdd.swift */,
-				58F8FBC52A1527C300F5446E /* MemoDetail.swift */,
 				58C7ACB42A2CF1A3003F791F /* SettingView.swift */,
 				58C7ACB62A2CF27B003F791F /* TutorialView.swift */,
 				580B0D682A30C45E00C7B586 /* FontSetting.swift */,
@@ -271,6 +270,15 @@
 				58CK00022B5E1A2100000002 /* CloudBackupView.swift */,
 			);
 			path = Screens;
+			sourceTree = "<group>";
+		};
+		9C994AE32EEA97F500FBC8F6 /* Memo */ = {
+			isa = PBXGroup;
+			children = (
+				58F8FBBC2A127B3000F5446E /* MemoAdd.swift */,
+				58F8FBC52A1527C300F5446E /* MemoDetail.swift */,
+			);
+			path = Memo;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

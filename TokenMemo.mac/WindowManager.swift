@@ -155,14 +155,12 @@ class WindowManager {
             return
         }
 
-        // TODO: 새 메모 뷰 구현 필요
-        let contentView = Text("새 메모 화면")
-            .frame(width: 400, height: 300)
+        let contentView = MemoAddView()
         let hostingController = NSHostingController(rootView: contentView)
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
-            styleMask: [.titled, .closable],
+            contentRect: NSRect(x: 0, y: 0, width: 550, height: 650),
+            styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
