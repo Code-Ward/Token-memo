@@ -276,7 +276,7 @@ struct MemoAdd: View {
         .alert(Constants.insertContents, isPresented: $showAlert) {
             
         }
-        .alert("Completed!", isPresented: $showSucessAlert) {
+        .alert("저장되었습니다!", isPresented: $showSucessAlert) {
             Button("Ok", role: .cancel) {
                 dismiss()
             }
@@ -739,12 +739,29 @@ struct MemoAdd: View {
     private func acceptClipboardSuggestion() {
         guard let content = clipboardContent, let detectedType = clipboardDetectedType else { return }
 
-        // 이미지인 경우 클립보드 히스토리에 영구 저장
+        // 이미지인 경우
         if let history = clipboardHistory, history.contentType == ClipboardContentType.image {
+            #if os(iOS)
+            // 클립보드에서 이미지 가져오기
+            if let image = UIPasteboard.general.image {
+                withAnimation {
+                    attachedImages = [ImageWrapper(image: image)]
+                }
+                print("✅ [MemoAdd] 클립보드에서 이미지를 가져왔습니다")
+            }
+            #endif
+
+            // 테마를 이미지로 자동 선택
+            selectedCategory = "이미지"
+
+            // 자동 분류 정보 설정
+            autoDetectedType = .image
+            autoDetectedConfidence = 1.0
+
+            // 클립보드 히스토리에 영구 저장
             var permanentHistory = history
             permanentHistory.isTemporary = false
 
-            // 클립보드 히스토리 저장
             var existingHistory = (try? MemoStore.shared.loadSmartClipboardHistory()) ?? []
             existingHistory.insert(permanentHistory, at: 0)
 
@@ -905,106 +922,147 @@ struct ContentInputSection: View {
 
                 Spacer()
 
-                // 이미지 버튼들
-                HStack(spacing: 8) {
-                    // 클립보드에서 이미지 붙여넣기
-                    Button {
-                        pasteImageFromClipboard()
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "doc.on.clipboard")
-                                .font(.caption)
-                            Text("붙여넣기")
-                                .font(.caption2)
+                // 이미지 버튼들 (이미지 테마일 때만 표시)
+                if selectedCategory == "이미지" {
+                    HStack(spacing: 8) {
+                        // 클립보드에서 이미지 붙여넣기
+                        Button {
+                            pasteImageFromClipboard()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "doc.on.clipboard")
+                                    .font(.caption)
+                                Text("붙여넣기")
+                                    .font(.caption2)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.purple.opacity(0.1))
+                            .foregroundColor(.purple)
+                            .cornerRadius(6)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.purple.opacity(0.1))
-                        .foregroundColor(.purple)
-                        .cornerRadius(6)
-                    }
 
-                    // 파일에서 이미지 선택
-                    Button {
-                        showImagePicker = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "photo")
-                                .font(.caption)
-                            Text("사진")
-                                .font(.caption2)
+                        // 파일에서 이미지 선택
+                        Button {
+                            showImagePicker = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "photo")
+                                    .font(.caption)
+                                Text("사진")
+                                    .font(.caption2)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .foregroundColor(.blue)
+                            .cornerRadius(6)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.blue.opacity(0.1))
-                        .foregroundColor(.blue)
-                        .cornerRadius(6)
                     }
                 }
             }
 
-            // 텍스트 입력 영역
-            ZStack(alignment: .topLeading) {
-                if value.isEmpty {
-                    Text(placeholderText)
-                        .foregroundColor(.secondary.opacity(0.5))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 20)
-                }
+            // 이미지 테마: 이미지 뷰 표시
+            if selectedCategory == "이미지" {
+                // 이미지가 선택되었을 때
+                if let firstImage = attachedImages.first {
+                    VStack(spacing: 12) {
+                        Image(uiImage: firstImage.image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 300)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                            )
 
-                TextEditor(text: $value)
-                    .font(.body)
-                    .frame(minHeight: 150)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 12)
-                    .scrollContentBackground(.hidden)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                    .keyboardType(keyboardTypeForTheme)
-                    .focused($isFocused)
-                    .onChange(of: value) { newValue in
-                        // 자동 분류
-                        if !newValue.isEmpty {
-                            let classification = ClipboardClassificationService.shared.classify(content: newValue)
-                            autoDetectedType = classification.type
-                            autoDetectedConfidence = classification.confidence
-                        }
-                    }
-            }
-
-            // 첨부된 이미지들 미리보기
-            if !attachedImages.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "photo.on.rectangle")
-                            .font(.caption)
-                            .foregroundColor(.purple)
-                        Text("첨부 이미지 (\(attachedImages.count))")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.purple)
-                    }
-
-                    ScrollView(.horizontal, showsIndicators: false) {
+                        // 이미지 변경/제거 버튼
                         HStack(spacing: 12) {
-                            ForEach(attachedImages) { wrapper in
-                                ImageAttachmentView(
-                                    image: wrapper.image,
-                                    onRemove: {
-                                        withAnimation {
-                                            attachedImages.removeAll { $0.id == wrapper.id }
-                                        }
-                                    },
-                                    onCopy: {
-                                        copyImageToClipboard(wrapper.image)
-                                    }
-                                )
+                            Button {
+                                showImagePicker = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "photo.badge.plus")
+                                    Text("이미지 변경")
+                                }
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .cornerRadius(8)
+                            }
+
+                            Button {
+                                withAnimation {
+                                    attachedImages.removeAll()
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: "trash")
+                                    Text("이미지 제거")
+                                }
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.red.opacity(0.1))
+                                .foregroundColor(.red)
+                                .cornerRadius(8)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
+                    .padding(.vertical, 12)
+                } else {
+                    // 이미지가 선택되지 않았을 때 - placeholder
+                    VStack(spacing: 16) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray.opacity(0.5))
+
+                        Text("이미지를 선택하세요")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+
+                        Text("위의 버튼을 사용하여\n클립보드에서 붙여넣거나\n사진을 선택할 수 있습니다")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 250)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
                 }
-                .padding(.top, 8)
+            } else {
+                // 텍스트 테마: 텍스트 입력 영역
+                ZStack(alignment: .topLeading) {
+                    if value.isEmpty {
+                        Text(placeholderText)
+                            .foregroundColor(.secondary.opacity(0.5))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 20)
+                    }
+
+                    TextEditor(text: $value)
+                        .font(.body)
+                        .frame(minHeight: 150)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 12)
+                        .scrollContentBackground(.hidden)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .keyboardType(keyboardTypeForTheme)
+                        .focused($isFocused)
+                        .onChange(of: value) { newValue in
+                            // 자동 분류
+                            if !newValue.isEmpty {
+                                let classification = ClipboardClassificationService.shared.classify(content: newValue)
+                                autoDetectedType = classification.type
+                                autoDetectedConfidence = classification.confidence
+                            }
+                        }
+                }
             }
         }
         .sheet(isPresented: $showImagePicker) {
