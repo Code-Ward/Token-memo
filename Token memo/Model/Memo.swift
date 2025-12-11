@@ -30,6 +30,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
     case businessNumber = "사업자등록번호"
     case vehiclePlate = "차량번호"
     case ipAddress = "IP주소"
+    case image = "이미지"
     case text = "텍스트"
 
     var icon: String {
@@ -49,6 +50,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
         case .businessNumber: return "building.2.fill"
         case .vehiclePlate: return "car.fill"
         case .ipAddress: return "network"
+        case .image: return "photo.fill"
         case .text: return "doc.text"
         }
     }
@@ -70,6 +72,7 @@ enum ClipboardItemType: String, Codable, CaseIterable {
         case .businessNumber: return "blue"
         case .vehiclePlate: return "green"
         case .ipAddress: return "purple"
+        case .image: return "pink"
         case .text: return "gray"
         }
     }
@@ -80,6 +83,7 @@ enum ClipboardContentType: String, Codable {
     case text = "text"
     case image = "image"
     case emoji = "emoji"
+    case mixed = "mixed" // 텍스트 + 이미지
 }
 
 // MARK: - Smart Clipboard History (자동 분류 클립보드)
@@ -184,7 +188,12 @@ struct Memo: Identifiable, Codable {
     // 자동 분류 관련 (Phase 1 추가)
     var autoDetectedType: ClipboardItemType?
 
-    init(id: UUID = UUID(), title: String, value: String, isChecked: Bool = false, lastEdited: Date = Date(), isFavorite: Bool = false, category: String = "기본", isSecure: Bool = false, isTemplate: Bool = false, templateVariables: [String] = [], placeholderValues: [String: [String]] = [:], autoDetectedType: ClipboardItemType? = nil) {
+    // 이미지 지원
+    var imageFileName: String? // 단일 이미지 (하위 호환성)
+    var imageFileNames: [String] = [] // 다중 이미지 지원
+    var contentType: ClipboardContentType = .text // 콘텐츠 타입
+
+    init(id: UUID = UUID(), title: String, value: String, isChecked: Bool = false, lastEdited: Date = Date(), isFavorite: Bool = false, category: String = "기본", isSecure: Bool = false, isTemplate: Bool = false, templateVariables: [String] = [], placeholderValues: [String: [String]] = [:], autoDetectedType: ClipboardItemType? = nil, imageFileName: String? = nil, imageFileNames: [String] = [], contentType: ClipboardContentType = .text) {
         self.id = id
         self.title = title
         self.value = value
@@ -197,6 +206,9 @@ struct Memo: Identifiable, Codable {
         self.templateVariables = templateVariables
         self.placeholderValues = placeholderValues
         self.autoDetectedType = autoDetectedType
+        self.imageFileName = imageFileName
+        self.imageFileNames = imageFileNames
+        self.contentType = contentType
     }
     
     init(from oldMemo: OldMemo) {
@@ -222,6 +234,9 @@ struct Memo: Identifiable, Codable {
         case templateVariables
         case placeholderValues
         case autoDetectedType
+        case imageFileName
+        case imageFileNames
+        case contentType
     }
     
     static var dummyData: [Memo] = [

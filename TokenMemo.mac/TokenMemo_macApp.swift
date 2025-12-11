@@ -79,10 +79,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // WindowManager 초기화 (알림 리스너 등록)
         _ = WindowManager.shared
+
+        // 클립보드 모니터링 시작
+        ClipboardMonitorService.shared.startMonitoring()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         print("🛑 [APP] 앱 종료 중...")
+
+        // 클립보드 모니터링 중지
+        ClipboardMonitorService.shared.stopMonitoring()
 
         // 메인 스레드에서 동기적으로 핫키 해제
         if Thread.isMainThread {
