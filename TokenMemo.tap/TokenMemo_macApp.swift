@@ -66,7 +66,7 @@ struct TokenMemo_macApp: App {
 // App Delegate
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        print("🚀 [APP] TokenMemo.tap 시작")
+        print("🚀 [APP] ClipKeyboard 시작")
 
         // 기본 창 숨기기 (메뉴바 앱으로 동작)
         NSApp.setActivationPolicy(.accessory)

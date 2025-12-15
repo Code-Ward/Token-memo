@@ -225,19 +225,19 @@ struct CloudBackupView: View {
             do {
                 try await backupService.backupData()
                 await MainActor.run {
-                    alertTitle = "백업 완료"
-                    alertMessage = "데이터가 성공적으로 백업되었습니다."
+                    alertTitle = NSLocalizedString("백업 완료", comment: "Backup completed")
+                    alertMessage = NSLocalizedString("데이터가 성공적으로 백업되었습니다.", comment: "Data successfully backed up")
                     showAlert = true
                 }
             } catch let error as CloudKitError {
                 await MainActor.run {
-                    alertTitle = "백업 실패"
+                    alertTitle = NSLocalizedString("백업 실패", comment: "Backup failed")
                     alertMessage = error.localizedDescription
                     showAlert = true
                 }
             } catch {
                 await MainActor.run {
-                    alertTitle = "백업 실패"
+                    alertTitle = NSLocalizedString("백업 실패", comment: "Backup failed")
                     alertMessage = error.localizedDescription
                     showAlert = true
                 }
@@ -250,19 +250,19 @@ struct CloudBackupView: View {
             do {
                 try await backupService.restoreData()
                 await MainActor.run {
-                    alertTitle = "복구 완료"
-                    alertMessage = "데이터가 성공적으로 복구되었습니다. 앱을 재시작하여 변경사항을 확인하세요."
+                    alertTitle = NSLocalizedString("복구 완료", comment: "Restore completed")
+                    alertMessage = NSLocalizedString("데이터가 성공적으로 복구되었습니다. 앱을 재시작하여 변경사항을 확인하세요.", comment: "Data successfully restored")
                     showAlert = true
                 }
             } catch let error as CloudKitError {
                 await MainActor.run {
-                    alertTitle = "복구 실패"
+                    alertTitle = NSLocalizedString("복구 실패", comment: "Restore failed")
                     alertMessage = error.localizedDescription
                     showAlert = true
                 }
             } catch {
                 await MainActor.run {
-                    alertTitle = "복구 실패"
+                    alertTitle = NSLocalizedString("복구 실패", comment: "Restore failed")
                     alertMessage = error.localizedDescription
                     showAlert = true
                 }
@@ -275,13 +275,13 @@ struct CloudBackupView: View {
             do {
                 try await backupService.deleteBackup()
                 await MainActor.run {
-                    alertTitle = "삭제 완료"
-                    alertMessage = "백업 데이터가 삭제되었습니다."
+                    alertTitle = NSLocalizedString("삭제 완료", comment: "Deletion completed")
+                    alertMessage = NSLocalizedString("백업 데이터가 삭제되었습니다.", comment: "Backup data deleted")
                     showAlert = true
                 }
             } catch {
                 await MainActor.run {
-                    alertTitle = "삭제 실패"
+                    alertTitle = NSLocalizedString("삭제 실패", comment: "Deletion failed")
                     alertMessage = error.localizedDescription
                     showAlert = true
                 }

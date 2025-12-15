@@ -35,23 +35,14 @@ struct Token_memoApp: App {
                     .onAppear() {
                         print("🎯 [APP BODY] 온보딩 완료 상태 -> TokenMemoList 표시")
                     }
-            } else if !manager.didShowUseCaseSelection {
-                // 새로운 사용 사례 선택 온보딩
-                UseCaseSelectionView {
-                    print("✅ [USE CASE] 사용 사례 선택 완료")
-                    manager.didShowUseCaseSelection = true
-                }
-                .onAppear() {
-                    print("🎯 [APP BODY] 첫 실행 -> 사용 사례 선택 화면 표시")
-                }
             } else {
-                // 기존 키보드 설정 온보딩
-                ColorfulOnboardingView(pages: OnboardingPages) {
+                // 온보딩
+                KeyboardSetupOnboardingView {
                     print("✅ [ONBOARDING] 온보딩 완료 -> didShowOnboarding = true")
                     manager.didShowOnboarding = true
                 }
                 .onAppear() {
-                    print("🎯 [APP BODY] 사용 사례 선택 후 -> 키보드 설정 온보딩 표시")
+                    print("🎯 [APP BODY] 첫 실행 -> 온보딩 표시")
                 }
             }
 
@@ -113,14 +104,4 @@ struct Token_memoApp: App {
         }
     }
     #endif
-
-    /// Onboarding pages
-    private var OnboardingPages: [ColorfulOnboardingView.PageDetails] {
-        [
-            .init(imageName: "step1", title: "Enable Keyboard", subtitle: "Go to Settings -> General -> Keyboard -> Keyboards then tap 'Add New Keyboard...' and select 'Token Memo'", color: Color(#colorLiteral(red: 0.4534527972, green: 0.5727163462, blue: 1, alpha: 1))),
-            .init(imageName: "step2", title: "Allow full access", subtitle: "Allow Full Access to fully use the copy function!", color: Color(#colorLiteral(red: 0.4534527972, green: 0.7018411277, blue: 0.06370192308, alpha: 1))),
-            .init(imageName: "step3", title: "Add your Text", subtitle: "In the Token Memo app, tap the '+' button to add your own text/phrase. To delete any added text, you can swipe left to delete.", color: Color(#colorLiteral(red: 0.9011964598, green: 0.5727163462, blue: 0, alpha: 1))),
-            .init(imageName: "step4", title: "Use the Keyboard", subtitle: "In the messages app, email or any other app, you can tap the 'globe' icon to switch between keyboards. Enjoy!", color: Color(#colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1)))
-        ]
-    }
 }

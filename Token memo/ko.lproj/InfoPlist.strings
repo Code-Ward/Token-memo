@@ -1,0 +1,7 @@
+/*
+  InfoPlist.strings
+  Token memo (Korean)
+*/
+
+/* App display name */
+"CFBundleDisplayName" = "클립키보드";
