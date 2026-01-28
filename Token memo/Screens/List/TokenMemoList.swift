@@ -158,8 +158,8 @@ struct TokenMemoList: View {
                     let loadedMemos = try MemoStore.shared.load(type: .tokenMemo)
                     print("📊 [TokenMemoList] 로드된 메모 개수: \(loadedMemos.count)")
 
-                    // 기본 템플릿 제공 (최초 1회)
-                    DefaultTemplates.provideDefaultTemplatesIfNeeded(to: MemoStore.shared)
+                    // 기본 템플릿 제공 (최초 1회) - 비활성화
+                    // DefaultTemplates.provideDefaultTemplatesIfNeeded(to: MemoStore.shared)
 
                     tokenMemos = sortMemos(loadedMemos)
                     print("🔄 [TokenMemoList] 메모 정렬 완료")
