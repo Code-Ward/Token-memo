@@ -78,4 +78,27 @@ struct Constants {
         }
         return NSLocalizedString(theme, comment: "Theme name")
     }
+
+    // MARK: - App Version (중앙 버전 관리)
+    // 주의: 실제 버전은 Xcode 프로젝트 설정의 MARKETING_VERSION에서 관리됩니다.
+    // 이 값은 문서화 및 참조 목적으로만 사용하세요.
+
+    /// 현재 앱 버전 (참고용)
+    /// 실제 버전은 Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString")에서 가져옵니다.
+    static let appVersion = "3.0.3"
+
+    /// App Store 앱 ID
+    static let appStoreID = "1543660502"
+
+    /// App Store 리뷰 URL
+    static let appStoreReviewURL = "https://apps.apple.com/app/id\(appStoreID)?action=write-review"
+
+    /// App Store 앱 페이지 URL
+    static let appStoreURL = "https://apps.apple.com/app/id\(appStoreID)"
+
+    /// 개발자 이메일
+    static let developerEmail = "clipkeyboard@gmail.com"
+
+    /// 튜토리얼 URL
+    static let tutorialURL = "https://leeo75.notion.site/ClipKeyboard-tutorial-70624fccc524465f99289c89bd0261a4"
 }

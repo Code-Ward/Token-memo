@@ -14,63 +14,63 @@ struct SettingView: View {
     
     var body: some View {
         List {
-            Section("앱 설정") {
+            Section(NSLocalizedString("앱 설정", comment: "App settings section")) {
                 NavigationLink(destination: ComboList()) {
-                    Label("Combo 관리", systemImage: "arrow.triangle.2.circlepath.circle")
+                    Label(NSLocalizedString("Combo 관리", comment: "Combo management"), systemImage: "arrow.triangle.2.circlepath.circle")
                         .badge("NEW")
                 }
 
                 NavigationLink(destination: TutorialView()) {
-                    Text("클립키보드 사용방법")
+                    Text(NSLocalizedString("클립키보드 사용방법", comment: "ClipKeyboard tutorial"))
                 }
 
                 NavigationLink(destination: KeyboardTutorialView()) {
-                    Text("FAQ")
+                    Text(NSLocalizedString("FAQ", comment: "FAQ"))
                 }
 
                 NavigationLink(destination: FontSetting()) {
-                    Text("앱 내 폰트 크기 변경")
+                    Text(NSLocalizedString("앱 내 폰트 크기 변경", comment: "Change app font size"))
                 }
 
                 NavigationLink(destination: ThemeSettings()) {
-                    Text("키보드 테마 설정")
+                    Text(NSLocalizedString("키보드 테마 설정", comment: "Keyboard theme settings"))
                 }
 
                 NavigationLink(destination: KeyboardLayoutSettings()) {
-                    Label("키보드 레이아웃 설정", systemImage: "rectangle.grid.2x2")
+                    Label(NSLocalizedString("키보드 레이아웃 설정", comment: "Keyboard layout settings"), systemImage: "rectangle.grid.2x2")
                         .badge("NEW")
                 }
 
                 NavigationLink(destination: CopyPasteView()) {
-                    Text("붙여넣기 알림 켜기/끄기")
+                    Text(NSLocalizedString("붙여넣기 알림 켜기/끄기", comment: "Paste notification toggle"))
                 }
             }
 
-            Section("데이터 관리") {
+            Section(NSLocalizedString("데이터 관리", comment: "Data management section")) {
                 NavigationLink(destination: CloudBackupView()) {
-                    Label("iCloud 백업 및 복구", systemImage: "icloud.and.arrow.up")
+                    Label(NSLocalizedString("iCloud 백업 및 복구", comment: "iCloud backup and restore"), systemImage: "icloud.and.arrow.up")
                 }
             }
 
-            Section("통계 및 정보") {
+            Section(NSLocalizedString("통계 및 정보", comment: "Statistics and info section")) {
                 NavigationLink(destination: UsageStatistics()) {
-                    Label("사용 통계", systemImage: "chart.bar.fill")
+                    Label(NSLocalizedString("사용 통계", comment: "Usage statistics"), systemImage: "chart.bar.fill")
                 }
             }
 
-            Section("지원") {
+            Section(NSLocalizedString("지원", comment: "Support section")) {
                 NavigationLink(destination: ReviewWriteView()) {
-                    Text("리뷰 및 평점 매기기")
+                    Label(NSLocalizedString("리뷰 및 평점 매기기", comment: "Write review"), systemImage: "star.fill")
                 }
 
                 NavigationLink(destination: ContactView()) {
-                    Text("개발자에게 연락하기")
+                    Text(NSLocalizedString("개발자에게 연락하기", comment: "Contact developer"))
                 }
             }
 
-            Section("앱 정보") {
+            Section(NSLocalizedString("앱 정보", comment: "App info section")) {
                 HStack {
-                    Text("버전")
+                    Text(NSLocalizedString("버전", comment: "Version label"))
                         .foregroundColor(.secondary)
                     Spacer()
                     Text(appVersion)
@@ -220,22 +220,93 @@ struct CopyPasteView: View {
 }
 
 struct ReviewWriteView: View {
-    
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        VStack {
-            Button("Open Web Page") {
-                
-            }
-            .onAppear(perform: {
-                dismiss()
 
-                if let url = URL(string: "https://apps.apple.com/app/id1543660502?action=write-review") {
-                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.requestReview) var requestReview
+    @State private var showingOptions = false
+
+    var body: some View {
+        List {
+            Section {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("⭐️ 리뷰 및 평점 매기기")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+
+                    Text("클립키보드가 마음에 드셨나요? 여러분의 리뷰는 앱을 더 발전시키는 데 큰 도움이 됩니다.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
-            })
+                .padding(.vertical, 8)
+            }
+
+            Section {
+                Button(action: {
+                    // StoreKit의 in-app 리뷰 요청 (iOS 14+)
+                    requestReview()
+                    // 1초 후 화면 닫기
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        dismiss()
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(NSLocalizedString("앱 내에서 리뷰 작성", comment: "In-app review button"))
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(NSLocalizedString("빠르고 간편하게 리뷰를 남길 수 있습니다 (권장)", comment: "In-app review description"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                Button(action: {
+                    dismiss()
+                    // App Store 리뷰 페이지로 직접 이동
+                    if let url = URL(string: Constants.appStoreReviewURL) {
+                        #if os(iOS)
+                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        #elseif os(macOS)
+                        NSWorkspace.shared.open(url)
+                        #endif
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "link")
+                            .foregroundColor(.blue)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(NSLocalizedString("App Store에서 리뷰 작성", comment: "App Store review button"))
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(NSLocalizedString("App Store 페이지에서 직접 작성합니다", comment: "App Store review description"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+            } footer: {
+                Text(NSLocalizedString("리뷰는 다른 사용자에게 앱을 추천하는 데 도움이 되며, 개발자에게는 큰 힘이 됩니다.", comment: "Review footer message"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
+        .navigationTitle(NSLocalizedString("리뷰 및 평점", comment: "Review navigation title"))
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 }
 
@@ -251,7 +322,7 @@ struct TutorialView: View {
             .onAppear(perform: {
                 dismiss()
 
-                if let url = URL(string: "https://leeo75.notion.site/ClipKeyboard-tutorial-70624fccc524465f99289c89bd0261a4?pvs=4") {
+                if let url = URL(string: Constants.tutorialURL) {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }
             })
@@ -271,7 +342,11 @@ struct ContactView: View {
             .onAppear(perform: {
                 dismiss()
 
-                EmailController.shared.sendEmail(subject: "클립 키보드에 관해 문의드릴 것이 있습니다", body: "안녕하세요 저는 클립키보드의 사용자입니다.", to: "clipkeyboard@gmail.com")
+                EmailController.shared.sendEmail(
+                    subject: NSLocalizedString("클립 키보드에 관해 문의드릴 것이 있습니다", comment: "Email subject"),
+                    body: NSLocalizedString("안녕하세요 저는 클립키보드의 사용자입니다.", comment: "Email body"),
+                    to: Constants.developerEmail
+                )
             })
         }
     }
