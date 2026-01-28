@@ -25,9 +25,9 @@ struct CloudBackupView: View {
                         .font(.title2)
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("iCloud 상태")
+                        Text(NSLocalizedString("iCloud 상태", comment: "iCloud status label"))
                             .font(.headline)
-                        Text(backupService.isAuthenticated ? "연결됨" : "연결 안 됨")
+                        Text(backupService.isAuthenticated ? NSLocalizedString("연결됨", comment: "Connected status") : NSLocalizedString("연결 안 됨", comment: "Disconnected status"))
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -38,18 +38,18 @@ struct CloudBackupView: View {
 
                 if !backupService.isAuthenticated {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("iCloud에 로그인하세요")
+                        Text(NSLocalizedString("iCloud에 로그인하세요", comment: "iCloud login prompt"))
                             .font(.subheadline)
                             .foregroundColor(.orange)
 
-                        Text("설정 > [사용자 이름] > iCloud에서 로그인할 수 있습니다.")
+                        Text(NSLocalizedString("설정 > [사용자 이름] > iCloud에서 로그인할 수 있습니다.", comment: "iCloud login instruction"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     .padding(.vertical, 4)
                 }
             } header: {
-                Text("연결 상태")
+                Text(NSLocalizedString("연결 상태", comment: "Connection status section header"))
             }
 
             // 백업 정보 섹션
@@ -58,7 +58,7 @@ struct CloudBackupView: View {
                     if let lastBackup = backupService.lastBackupDate {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("마지막 백업")
+                                Text(NSLocalizedString("마지막 백업", comment: "Last backup label"))
                                     .font(.headline)
                                 Text(lastBackup, style: .relative)
                                     .font(.subheadline)
@@ -78,9 +78,9 @@ struct CloudBackupView: View {
                     } else {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("백업 없음")
+                                Text(NSLocalizedString("백업 없음", comment: "No backup label"))
                                     .font(.headline)
-                                Text("데이터를 백업하지 않았습니다")
+                                Text(NSLocalizedString("데이터를 백업하지 않았습니다", comment: "No backup description"))
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }
@@ -94,7 +94,7 @@ struct CloudBackupView: View {
                         .padding(.vertical, 4)
                     }
                 } header: {
-                    Text("백업 정보")
+                    Text(NSLocalizedString("백업 정보", comment: "Backup information section header"))
                 }
 
                 // 백업 작업 섹션
@@ -109,10 +109,10 @@ struct CloudBackupView: View {
                                 .font(.title3)
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("백업하기")
+                                Text(NSLocalizedString("백업하기", comment: "Backup button label"))
                                     .font(.headline)
                                     .foregroundColor(.primary)
-                                Text("현재 데이터를 iCloud에 백업합니다")
+                                Text(NSLocalizedString("현재 데이터를 iCloud에 백업합니다", comment: "Backup button description"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -137,10 +137,10 @@ struct CloudBackupView: View {
                                 .font(.title3)
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("복구하기")
+                                Text(NSLocalizedString("복구하기", comment: "Restore button label"))
                                     .font(.headline)
                                     .foregroundColor(.primary)
-                                Text("iCloud에서 데이터를 복구합니다")
+                                Text(NSLocalizedString("iCloud에서 데이터를 복구합니다", comment: "Restore button description"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -165,9 +165,9 @@ struct CloudBackupView: View {
                                     .font(.title3)
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("백업 삭제")
+                                    Text(NSLocalizedString("백업 삭제", comment: "Delete backup button label"))
                                         .font(.headline)
-                                    Text("iCloud의 백업 데이터를 삭제합니다")
+                                    Text(NSLocalizedString("iCloud의 백업 데이터를 삭제합니다", comment: "Delete backup button description"))
                                         .font(.caption)
                                 }
 
@@ -178,12 +178,12 @@ struct CloudBackupView: View {
                         .disabled(backupService.isBackingUp || backupService.isRestoring)
                     }
                 } header: {
-                    Text("백업 관리")
+                    Text(NSLocalizedString("백업 관리", comment: "Backup management section header"))
                 } footer: {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("• 백업은 메모와 클립보드 히스토리를 모두 포함합니다")
-                        Text("• 복구 시 현재 데이터는 백업 데이터로 교체됩니다")
-                        Text("• 백업 데이터는 iCloud에 안전하게 저장됩니다")
+                        Text(NSLocalizedString("• 백업은 메모와 클립보드 히스토리를 모두 포함합니다", comment: "Backup info 1"))
+                        Text(NSLocalizedString("• 복구 시 현재 데이터는 백업 데이터로 교체됩니다", comment: "Backup info 2"))
+                        Text(NSLocalizedString("• 백업 데이터는 iCloud에 안전하게 저장됩니다", comment: "Backup info 3"))
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -191,30 +191,30 @@ struct CloudBackupView: View {
                 }
             }
         }
-        .navigationTitle("iCloud 백업")
+        .navigationTitle(NSLocalizedString("iCloud 백업", comment: "iCloud backup navigation title"))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("확인", role: .cancel) { }
+            Button(NSLocalizedString("확인", comment: "OK button"), role: .cancel) { }
         } message: {
             Text(alertMessage)
         }
-        .confirmationDialog("백업 데이터 복구", isPresented: $showRestoreConfirmation, titleVisibility: .visible) {
-            Button("복구", role: .destructive) {
+        .confirmationDialog(NSLocalizedString("백업 데이터 복구", comment: "Restore backup dialog title"), isPresented: $showRestoreConfirmation, titleVisibility: .visible) {
+            Button(NSLocalizedString("복구", comment: "Restore button"), role: .destructive) {
                 performRestore()
             }
-            Button("취소", role: .cancel) { }
+            Button(NSLocalizedString("취소", comment: "Cancel button"), role: .cancel) { }
         } message: {
-            Text("현재 데이터가 백업 데이터로 교체됩니다. 계속하시겠습니까?")
+            Text(NSLocalizedString("현재 데이터가 백업 데이터로 교체됩니다. 계속하시겠습니까?", comment: "Restore confirmation message"))
         }
-        .confirmationDialog("백업 삭제", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
-            Button("삭제", role: .destructive) {
+        .confirmationDialog(NSLocalizedString("백업 삭제", comment: "Delete backup dialog title"), isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
+            Button(NSLocalizedString("삭제", comment: "Delete button"), role: .destructive) {
                 performDelete()
             }
-            Button("취소", role: .cancel) { }
+            Button(NSLocalizedString("취소", comment: "Cancel button"), role: .cancel) { }
         } message: {
-            Text("iCloud의 백업 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")
+            Text(NSLocalizedString("iCloud의 백업 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.", comment: "Delete confirmation message"))
         }
     }
 

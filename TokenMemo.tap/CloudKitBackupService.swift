@@ -21,18 +21,54 @@ enum CloudKitError: Error {
     var localizedDescription: String {
         switch self {
         case .notAuthenticated:
-            return "iCloud에 로그인되어 있지 않습니다."
+            return NSLocalizedString("iCloud에 로그인되어 있지 않습니다. 설정 > [사용자 이름] > iCloud에서 로그인해주세요.",
+                                   comment: "iCloud not authenticated error message")
         case .backupFailed(let error):
-            return "백업 실패: \(error.localizedDescription)"
+            return getActionableMessage(for: error, operation: "backup")
         case .restoreFailed(let error):
-            return "복구 실패: \(error.localizedDescription)"
+            return getActionableMessage(for: error, operation: "restore")
         case .noBackupFound:
-            return "백업 데이터를 찾을 수 없습니다."
+            return NSLocalizedString("백업 데이터가 없습니다. 먼저 백업을 생성해주세요.",
+                                   comment: "No backup found error message")
         case .encodingFailed:
-            return "데이터 인코딩에 실패했습니다."
+            return NSLocalizedString("데이터를 준비하는 중 문제가 발생했습니다. 앱을 재시작하고 다시 시도해주세요.",
+                                   comment: "Data encoding failed error message")
         case .decodingFailed:
-            return "데이터 디코딩에 실패했습니다."
+            return NSLocalizedString("백업 데이터를 읽을 수 없습니다. 최신 버전의 앱을 사용하고 있는지 확인해주세요.",
+                                   comment: "Data decoding failed error message")
         }
+    }
+
+    // MARK: - Helper
+
+    private func getActionableMessage(for error: Error, operation: String) -> String {
+        if let ckError = error as? CKError {
+            switch ckError.code {
+            case .networkUnavailable, .networkFailure:
+                return NSLocalizedString("네트워크 연결을 확인하고 다시 시도해주세요.",
+                                       comment: "Network error message")
+            case .notAuthenticated:
+                return NSLocalizedString("iCloud에 로그인되어 있지 않습니다. 설정 > [사용자 이름] > iCloud에서 로그인해주세요.",
+                                       comment: "iCloud not authenticated error message")
+            case .quotaExceeded:
+                return NSLocalizedString("iCloud 저장 공간이 부족합니다. 설정 > [사용자 이름] > iCloud > 저장 공간 관리에서 확인해주세요.",
+                                       comment: "iCloud quota exceeded error message")
+            case .permissionFailure:
+                return NSLocalizedString("iCloud Drive가 활성화되어 있는지 확인해주세요. 설정 > [사용자 이름] > iCloud > iCloud Drive를 켜주세요.",
+                                       comment: "iCloud permission error message")
+            case .serverResponseLost, .serviceUnavailable:
+                return NSLocalizedString("iCloud 서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.",
+                                       comment: "iCloud server error message")
+            case .zoneBusy, .requestRateLimited:
+                return NSLocalizedString("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.",
+                                       comment: "Rate limited error message")
+            default:
+                return NSLocalizedString("문제가 발생했습니다. 네트워크 연결과 iCloud 상태를 확인하고 다시 시도해주세요.",
+                                       comment: "Generic iCloud error message")
+            }
+        }
+        return NSLocalizedString("문제가 발생했습니다. 네트워크 연결과 iCloud 상태를 확인하고 다시 시도해주세요.",
+                               comment: "Generic error message")
     }
 }
 

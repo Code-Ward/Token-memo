@@ -22,11 +22,11 @@ struct CloudBackupView: View {
                     .font(.system(size: 50))
                     .foregroundStyle(.blue)
 
-                Text("iCloud 백업 및 복구")
+                Text(NSLocalizedString("iCloud 백업 및 복구", comment: "iCloud backup and restore title"))
                     .font(.title)
                     .bold()
 
-                Text("데이터를 iCloud에 안전하게 백업하세요")
+                Text(NSLocalizedString("데이터를 iCloud에 안전하게 백업하세요", comment: "Backup description"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -39,15 +39,15 @@ struct CloudBackupView: View {
                 Image(systemName: cloudService.isAuthenticated ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .foregroundStyle(cloudService.isAuthenticated ? .green : .red)
 
-                Text("iCloud 상태:")
+                Text(NSLocalizedString("iCloud 상태:", comment: "iCloud status label"))
                     .font(.headline)
 
-                Text(cloudService.isAuthenticated ? "연결됨" : "연결 안 됨")
+                Text(cloudService.isAuthenticated ? NSLocalizedString("연결됨", comment: "Connected status") : NSLocalizedString("연결 안 됨", comment: "Disconnected status"))
                     .foregroundStyle(cloudService.isAuthenticated ? .green : .red)
 
                 Spacer()
 
-                Button("상태 확인") {
+                Button(NSLocalizedString("상태 확인", comment: "Check status button")) {
                     cloudService.checkAccountStatus()
                 }
                 .buttonStyle(.bordered)
@@ -62,13 +62,13 @@ struct CloudBackupView: View {
                     Image(systemName: "clock.fill")
                         .foregroundStyle(.blue)
 
-                    Text("마지막 백업:")
+                    Text(NSLocalizedString("마지막 백업:", comment: "Last backup label"))
                         .font(.headline)
 
                     Text(lastBackupDate, style: .relative)
                         .foregroundStyle(.secondary)
 
-                    Text("전")
+                    Text(NSLocalizedString("전", comment: "ago"))
                         .foregroundStyle(.secondary)
 
                     Spacer()
@@ -92,7 +92,7 @@ struct CloudBackupView: View {
                         } else {
                             Image(systemName: "icloud.and.arrow.up")
                         }
-                        Text(cloudService.isBackingUp ? "백업 중..." : "백업하기")
+                        Text(cloudService.isBackingUp ? NSLocalizedString("백업 중...", comment: "Backing up status") : NSLocalizedString("백업하기", comment: "Backup button"))
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -110,7 +110,7 @@ struct CloudBackupView: View {
                         } else {
                             Image(systemName: "icloud.and.arrow.down")
                         }
-                        Text(cloudService.isRestoring ? "복구 중..." : "복구하기")
+                        Text(cloudService.isRestoring ? NSLocalizedString("복구 중...", comment: "Restoring status") : NSLocalizedString("복구하기", comment: "Restore button"))
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -123,7 +123,7 @@ struct CloudBackupView: View {
                 } label: {
                     HStack {
                         Image(systemName: "trash")
-                        Text("백업 삭제")
+                        Text(NSLocalizedString("백업 삭제", comment: "Delete backup button"))
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
@@ -133,7 +133,7 @@ struct CloudBackupView: View {
                 .disabled(!cloudService.isAuthenticated || cloudService.lastBackupDate == nil)
             }
 
-            Text("⚠️ 복구 시 현재 데이터가 백업 데이터로 교체됩니다")
+            Text(NSLocalizedString("⚠️ 복구 시 현재 데이터가 백업 데이터로 교체됩니다", comment: "Restore warning"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.bottom)
@@ -141,7 +141,7 @@ struct CloudBackupView: View {
         .padding(30)
         .frame(minWidth: 500, minHeight: 500)
         .alert(alertTitle, isPresented: $showAlert) {
-            Button("확인", role: .cancel) {}
+            Button(NSLocalizedString("확인", comment: "OK button"), role: .cancel) {}
         } message: {
             Text(alertMessage)
         }
