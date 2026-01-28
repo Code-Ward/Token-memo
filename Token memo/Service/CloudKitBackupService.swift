@@ -111,6 +111,27 @@ class CloudKitBackupService: ObservableObject {
         self.lastBackupDate = date
     }
 
+    // MARK: - Helper Methods
+
+    /// Data를 CKAsset으로 변환 (대용량 데이터 저장용)
+    private func createAsset(from data: Data, filename: String) throws -> CKAsset {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(filename)
+
+        try data.write(to: fileURL)
+
+        return CKAsset(fileURL: fileURL)
+    }
+
+    /// CKAsset에서 Data 읽기
+    private func readAsset(_ asset: CKAsset) throws -> Data {
+        guard let fileURL = asset.fileURL else {
+            throw CloudKitError.decodingFailed
+        }
+
+        return try Data(contentsOf: fileURL)
+    }
+
     // MARK: - Backup
 
     func backupData() async throws {
@@ -162,10 +183,14 @@ class CloudKitBackupService: ObservableObject {
                 print("✨ [CloudKit] 새 백업 레코드 생성")
             }
 
-            // 4. 레코드 데이터 업데이트
-            record["memos"] = memosData as CKRecordValue
-            record["smartClipboardHistory"] = smartClipboardData as CKRecordValue
-            record["combos"] = combosData as CKRecordValue
+            // 4. CKAsset으로 데이터 저장 (1MB 제한 없음)
+            let memosAsset = try createAsset(from: memosData, filename: "memos.json")
+            let smartClipboardAsset = try createAsset(from: smartClipboardData, filename: "smartClipboard.json")
+            let combosAsset = try createAsset(from: combosData, filename: "combos.json")
+
+            record["memosAsset"] = memosAsset
+            record["smartClipboardAsset"] = smartClipboardAsset
+            record["combosAsset"] = combosAsset
             record["backupDate"] = Date() as CKRecordValue
 
             // 앱 버전을 Info.plist에서 자동으로 가져오기
@@ -173,9 +198,12 @@ class CloudKitBackupService: ObservableObject {
             record["version"] = appVersion as CKRecordValue
 
             print("💾 [CloudKit] 레코드 데이터 업데이트 완료")
+            print("📊 [CloudKit] 메모 데이터 크기: \(ByteCountFormatter.string(fromByteCount: Int64(memosData.count), countStyle: .file))")
+            print("📊 [CloudKit] 스마트 클립보드 크기: \(ByteCountFormatter.string(fromByteCount: Int64(smartClipboardData.count), countStyle: .file))")
+            print("📊 [CloudKit] Combo 데이터 크기: \(ByteCountFormatter.string(fromByteCount: Int64(combosData.count), countStyle: .file))")
 
-            // 5. 저장
-            _ = try await privateDatabase.save(record)
+            // 5. 저장 (재시도 로직 포함)
+            _ = try await saveRecordWithRetry(record, maxRetries: 3)
 
             let backupDate = Date()
             await MainActor.run {
@@ -184,10 +212,59 @@ class CloudKitBackupService: ObservableObject {
 
             print("✅ [CloudKit] 백업 완료: \(backupDate)")
 
-        } catch {
+        } catch let error as CKError {
             print("❌ [CloudKit] 백업 실패: \(error)")
+            print("   코드: \(error.code.rawValue)")
+            print("   설명: \(error.localizedDescription)")
+
+            // 상세 에러 정보 로깅
+            if let underlyingError = error.userInfo[NSUnderlyingErrorKey] as? Error {
+                print("   Underlying Error: \(underlyingError)")
+            }
+
+            throw CloudKitError.backupFailed(error)
+        } catch {
+            print("❌ [CloudKit] 백업 실패 (일반 에러): \(error)")
             throw CloudKitError.backupFailed(error)
         }
+    }
+
+    /// 재시도 로직이 포함된 레코드 저장
+    private func saveRecordWithRetry(_ record: CKRecord, maxRetries: Int) async throws -> CKRecord {
+        var lastError: Error?
+
+        for attempt in 1...maxRetries {
+            do {
+                print("💾 [CloudKit] 저장 시도 \(attempt)/\(maxRetries)...")
+                let savedRecord = try await privateDatabase.save(record)
+                print("✅ [CloudKit] 저장 성공 (시도 \(attempt))")
+                return savedRecord
+            } catch let error as CKError {
+                lastError = error
+                print("⚠️ [CloudKit] 저장 실패 (시도 \(attempt)): \(error.code.rawValue)")
+
+                // 재시도 가능한 에러인지 확인
+                switch error.code {
+                case .networkUnavailable, .networkFailure, .serviceUnavailable, .zoneBusy, .requestRateLimited:
+                    if attempt < maxRetries {
+                        // 지수 백오프: 1초, 2초, 4초
+                        let delay = UInt64(pow(2.0, Double(attempt - 1)) * 1_000_000_000)
+                        print("   ⏳ \(attempt)초 후 재시도...")
+                        try await Task.sleep(nanoseconds: delay)
+                        continue
+                    }
+                default:
+                    // 재시도 불가능한 에러는 즉시 throw
+                    throw error
+                }
+            } catch {
+                lastError = error
+                throw error
+            }
+        }
+
+        // 모든 재시도 실패
+        throw lastError ?? CloudKitError.backupFailed(NSError(domain: "CloudKitBackup", code: -1))
     }
 
     // MARK: - Restore
@@ -219,8 +296,22 @@ class CloudKitBackupService: ObservableObject {
                 print("📦 [CloudKit] 백업 버전: \(version)")
             }
 
-            // 2. 메모 데이터 복구 (필수)
-            guard let memosData = record["memos"] as? Data else {
+            // 2. 메모 데이터 복구 (CKAsset에서 읽기)
+            var memosData: Data?
+
+            // 새 형식 (CKAsset) 시도
+            if let memosAsset = record["memosAsset"] as? CKAsset {
+                memosData = try? readAsset(memosAsset)
+                print("📦 [CloudKit] 메모 데이터 (Asset): \(memosData != nil ? "성공" : "실패")")
+            }
+
+            // 레거시 형식 (Data) 시도
+            if memosData == nil, let legacyData = record["memos"] as? Data {
+                memosData = legacyData
+                print("📦 [CloudKit] 메모 데이터 (레거시): 성공")
+            }
+
+            guard let memosData = memosData else {
                 print("❌ [CloudKit] 메모 데이터 없음")
                 throw CloudKitError.noBackupFound
             }
@@ -234,19 +325,44 @@ class CloudKitBackupService: ObservableObject {
 
             // 3. 스마트 클립보드 복구 (옵션 - 없으면 건너뛰기)
             var smartClipboardHistory: [SmartClipboardHistory] = []
-            if let smartClipboardData = record["smartClipboardHistory"] as? Data {
-                if let decoded = try? JSONDecoder().decode([SmartClipboardHistory].self, from: smartClipboardData) {
-                    smartClipboardHistory = decoded
-                    print("📦 [CloudKit] 복구할 스마트 클립보드: \(smartClipboardHistory.count)개")
-                } else {
-                    print("⚠️ [CloudKit] 스마트 클립보드 디코딩 실패 - 건너뛰기")
-                }
+
+            // 새 형식 (CKAsset) 시도
+            if let smartAsset = record["smartClipboardAsset"] as? CKAsset,
+               let smartData = try? readAsset(smartAsset),
+               let decoded = try? JSONDecoder().decode([SmartClipboardHistory].self, from: smartData) {
+                smartClipboardHistory = decoded
+                print("📦 [CloudKit] 복구할 스마트 클립보드 (Asset): \(smartClipboardHistory.count)개")
+            }
+            // 레거시 형식 (Data) 시도
+            else if let legacyData = record["smartClipboardHistory"] as? Data,
+                    let decoded = try? JSONDecoder().decode([SmartClipboardHistory].self, from: legacyData) {
+                smartClipboardHistory = decoded
+                print("📦 [CloudKit] 복구할 스마트 클립보드 (레거시): \(smartClipboardHistory.count)개")
             } else {
-                print("ℹ️ [CloudKit] 스마트 클립보드 데이터 없음 (레거시 백업일 수 있음)")
+                print("ℹ️ [CloudKit] 스마트 클립보드 데이터 없음")
             }
 
             // 4. Combo 복구 (옵션 - 없으면 건너뛰기)
             var combos: [Combo] = []
+
+            // 새 형식 (CKAsset) 시도
+            if let combosAsset = record["combosAsset"] as? CKAsset,
+               let combosData = try? readAsset(combosAsset),
+               let decoded = try? JSONDecoder().decode([Combo].self, from: combosData) {
+                combos = decoded
+                print("📦 [CloudKit] 복구할 Combo (Asset): \(combos.count)개")
+            }
+            // 레거시 형식 (Data) 시도
+            else if let legacyData = record["combos"] as? Data,
+                    let decoded = try? JSONDecoder().decode([Combo].self, from: legacyData) {
+                combos = decoded
+                print("📦 [CloudKit] 복구할 Combo (레거시): \(combos.count)개")
+            } else {
+                print("ℹ️ [CloudKit] Combo 데이터 없음")
+            }
+
+            // 이전 형식 호환성을 위해 남겨둔 코드 삭제
+            // 5. 데이터 저장으로 계속...
             if let combosData = record["combos"] as? Data {
                 if let decoded = try? JSONDecoder().decode([Combo].self, from: combosData) {
                     combos = decoded
