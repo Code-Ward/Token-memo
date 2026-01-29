@@ -19,6 +19,7 @@
 		58338FD62AD1A574002DC753 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 58C4733F2A109F0E009D87BC /* Assets.xcassets */; };
 		585FE9772ACC62A5003A7FF9 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 585FE9762ACC62A5003A7FF9 /* KeyboardView.swift */; };
 		587381EE2F2A66120042ECA4 /* KeyboardLayoutSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587381ED2F2A66120042ECA4 /* KeyboardLayoutSettings.swift */; };
+		587382A42F2B7EBD0042ECA4 /* ReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587382A32F2B7EBD0042ECA4 /* ReviewManager.swift */; };
 		587B7CE22A264F6400455338 /* CollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587B7CE12A264F6400455338 /* CollectionViewCell.swift */; };
 		587BDC4E2A1D0D40001464E4 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587BDC4D2A1D0D40001464E4 /* KeyboardViewController.swift */; };
 		587BDC522A1D0D40001464E4 /* TokenKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 587BDC4B2A1D0D40001464E4 /* TokenKeyboard.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -100,6 +101,7 @@
 		581550622AD5321F00A6115B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		585FE9762ACC62A5003A7FF9 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
 		587381ED2F2A66120042ECA4 /* KeyboardLayoutSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLayoutSettings.swift; sourceTree = "<group>"; };
+		587382A32F2B7EBD0042ECA4 /* ReviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewManager.swift; sourceTree = "<group>"; };
 		587B7CE12A264F6400455338 /* CollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCell.swift; sourceTree = "<group>"; };
 		587BDC4B2A1D0D40001464E4 /* TokenKeyboard.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TokenKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		587BDC4D2A1D0D40001464E4 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
@@ -276,6 +278,7 @@
 		58D9D52C2A3B237D0086BE1A /* Manager */ = {
 			isa = PBXGroup;
 			children = (
+				587382A32F2B7EBD0042ECA4 /* ReviewManager.swift */,
 				58D9D52D2A3B23900086BE1A /* DataManager.swift */,
 				58CK00062B5E1A2100000005 /* MenuBarManager.swift */,
 				58CK00082B5E1A2100000006 /* GlobalHotkeyManager.swift */,
@@ -596,6 +599,7 @@
 				58CK00072B5E1A2100000005 /* MenuBarManager.swift in Sources */,
 				58CK00092B5E1A2100000006 /* GlobalHotkeyManager.swift in Sources */,
 				1C7C6CDBD08940B2BC4EED19 /* ComboList.swift in Sources */,
+				587382A42F2B7EBD0042ECA4 /* ReviewManager.swift in Sources */,
 				9C994B0A2EEAA8BF00FBC8F6 /* PlaceholderSelectorView.swift in Sources */,
 				256F32EF1054402BBEBAA072 /* ComboExecutionService.swift in Sources */,
 				72CAAA55032A5A2612281DD1 /* ComboItemPickerView.swift in Sources */,
