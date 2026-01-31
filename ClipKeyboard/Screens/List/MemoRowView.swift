@@ -44,12 +44,6 @@ struct MemoRowView: View {
                         .cornerRadius(8)
                 }
 
-                if memo.clipCount > 0 {
-                    Label("\(memo.clipCount)", systemImage: "chart.bar.fill")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-
                 if memo.isSecure {
                     Image(systemName: "lock.fill")
                         .font(.caption)

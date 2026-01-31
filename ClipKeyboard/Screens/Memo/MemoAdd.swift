@@ -21,7 +21,6 @@ struct MemoAdd: View {
     @State private var keyword: String = ""
     @State private var value: String = ""
     @State private var showAlert: Bool = false
-    @State private var showSucessAlert: Bool = false
     @State private var attachedImages: [ImageWrapper] = [] // 첨부된 이미지들
 
     // 수정 모드용 초기값
@@ -204,8 +203,6 @@ struct MemoAdd: View {
                             return
                         }
 
-                        showSucessAlert = true
-                        // success
                         // save
                         do {
                             var loadedMemos:[Memo] = []
@@ -302,8 +299,17 @@ struct MemoAdd: View {
                                 }
                             }
 
+                            // 저장 완료 토스트
+                            toastMessage = NSLocalizedString("저장됨", comment: "Saved toast")
+                            showToast = true
+
+                            // 토스트 표시 후 화면 닫기
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                dismiss()
+                            }
+
                             // 적절한 타이밍에 리뷰 요청
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 ReviewManager.shared.requestReviewIfAppropriate()
                             }
                         } catch {
@@ -334,11 +340,6 @@ struct MemoAdd: View {
         }
         .alert(alertMessage, isPresented: $showAlert) {
 
-        }
-        .alert("저장되었습니다!", isPresented: $showSucessAlert) {
-            Button("Ok", role: .cancel) {
-                dismiss()
-            }
         }
         .overlay(
             Group {

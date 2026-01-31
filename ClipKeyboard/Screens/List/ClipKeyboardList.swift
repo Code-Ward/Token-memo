@@ -276,10 +276,8 @@ struct ClipKeyboardList: View {
 
             HStack {
                 Spacer()
-                Image(systemName: "plus.circle")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 25)
+                Image(systemName: "plus")
+                    .font(.title2)
                     .foregroundColor(.blue)
                 Spacer()
             }
@@ -362,25 +360,29 @@ struct ClipKeyboardList: View {
                 }
             }
         } label: {
-            Image(systemName: isSearchBarVisible ? "magnifyingglass.circle.fill" : "magnifyingglass")
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(isSearchBarVisible ? .blue : .secondary)
         }
 
         NavigationLink {
             ClipboardList()
         } label: {
             Image(systemName: "clock.arrow.circlepath")
+                .foregroundColor(.secondary)
         }
 
         NavigationLink {
             SettingView()
         } label: {
-            Image(systemName: "info.circle")
+            Image(systemName: "gearshape")
+                .foregroundColor(.secondary)
         }
 
         Button {
             showPlaceholderManagementSheet = true
         } label: {
-            Image(systemName: "list.bullet.circle")
+            Image(systemName: "list.bullet")
+                .foregroundColor(.secondary)
         }
 
         Spacer()
@@ -388,7 +390,8 @@ struct ClipKeyboardList: View {
         NavigationLink {
             MemoAdd()
         } label: {
-            Image(systemName: "square.and.pencil")
+            Image(systemName: "plus")
+                .foregroundColor(.blue)
         }
     }
 
@@ -397,16 +400,19 @@ struct ClipKeyboardList: View {
     private var toastOverlay: some View {
         if showToast {
             Text(toastMessage)
+                .font(.footnote)
                 .multilineTextAlignment(.center)
-                .padding()
-                .background(.gray)
-                .cornerRadius(8)
-                .padding()
                 .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(Color(white: 0.11, opacity: 0.9))
+                .clipShape(Capsule())
+                .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
                 .onTapGesture {
                     showToast = false
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.easeOut(duration: 0.2), value: showToast)
                 .padding(.bottom, 50)
         }
     }
@@ -570,12 +576,34 @@ struct ClipKeyboardList: View {
 
     /// Empty list view
     private var EmptyListView: some View {
-        VStack(spacing: 5) {
-            Image(systemName: "eyes").font(.system(size: 45)).padding(10)
-            Text(Constants.nothingToPaste)
-                .font(.system(size: 22)).bold()
-            Text(Constants.emptyDescription).opacity(0.7)
-        }.multilineTextAlignment(.center).padding(30)
+        VStack(spacing: 20) {
+            Text(NSLocalizedString("자주 치는 문장이 뭔가요?", comment: "Empty state question"))
+                .font(.title3)
+                .fontWeight(.medium)
+                .padding(.top, 40)
+
+            VStack(spacing: 12) {
+                Text(NSLocalizedString("\"지금 가는 중\"?", comment: "Empty state example 1"))
+                    .foregroundColor(.secondary)
+                Text(NSLocalizedString("\"감사합니다\"?", comment: "Empty state example 2"))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.bottom, 20)
+
+            Button {
+                // MemoAdd 화면으로 이동하는 로직은 외부 NavigationLink가 처리
+            } label: {
+                Text(NSLocalizedString("첫 클립 추가", comment: "Add first clip button"))
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.borderedProminent)
+
+            Spacer()
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 30)
     }
     
     private func showToast(message: String) {
