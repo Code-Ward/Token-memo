@@ -97,6 +97,35 @@ struct CloudBackupView: View {
                     Text(NSLocalizedString("백업 정보", comment: "Backup information section header"))
                 }
 
+                // 자동 백업 섹션
+                Section {
+                    Toggle(isOn: Binding(
+                        get: { backupService.autoBackupEnabled },
+                        set: { newValue in
+                            if newValue {
+                                backupService.enableAutoBackup()
+                            } else {
+                                backupService.disableAutoBackup()
+                            }
+                        }
+                    )) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(NSLocalizedString("자동 백업", comment: "Auto backup label"))
+                                .font(.headline)
+                            Text(NSLocalizedString("데이터 변경 시 자동으로 백업합니다", comment: "Auto backup description"))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text(NSLocalizedString("자동 백업 설정", comment: "Auto backup settings section header"))
+                } footer: {
+                    Text(NSLocalizedString("• 자동 백업이 활성화되면 메모, 클립보드, 콤보 변경 시 자동으로 백업됩니다\n• 5분마다 정기적으로 백업이 실행됩니다", comment: "Auto backup info"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
                 // 백업 작업 섹션
                 Section {
                     // 백업 버튼
@@ -206,7 +235,11 @@ struct CloudBackupView: View {
             }
             Button(NSLocalizedString("취소", comment: "Cancel button"), role: .cancel) { }
         } message: {
-            Text(NSLocalizedString("현재 데이터가 백업 데이터로 교체됩니다. 계속하시겠습니까?", comment: "Restore confirmation message"))
+            if backupService.hasLocalData() {
+                Text(NSLocalizedString("⚠️ 현재 기기에 데이터가 있습니다.\n\n복구하면 현재의 모든 메모, 클립보드, 콤보가 삭제되고 백업 데이터로 교체됩니다.\n\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?", comment: "Restore with data warning message"))
+            } else {
+                Text(NSLocalizedString("백업 데이터를 복구합니다.", comment: "Restore empty device message"))
+            }
         }
         .confirmationDialog(NSLocalizedString("백업 삭제", comment: "Delete backup dialog title"), isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
             Button(NSLocalizedString("삭제", comment: "Delete button"), role: .destructive) {
@@ -248,7 +281,8 @@ struct CloudBackupView: View {
     private func performRestore() {
         Task {
             do {
-                try await backupService.restoreData()
+                // 사용자가 확인 대화상자에서 "복구"를 선택했으므로 forceOverwrite = true
+                try await backupService.restoreData(forceOverwrite: true)
                 await MainActor.run {
                     alertTitle = NSLocalizedString("복구 완료", comment: "Restore completed")
                     alertMessage = NSLocalizedString("데이터가 성공적으로 복구되었습니다. 앱을 재시작하여 변경사항을 확인하세요.", comment: "Data successfully restored")

@@ -63,12 +63,18 @@ class MemoStore: ObservableObject {
         let data = try JSONEncoder().encode(memos)
         guard let outfile = try Self.fileURL(type: type) else { return }
         try data.write(to: outfile)
+
+        // 데이터 변경 알림 전송 (자동 백업 트리거)
+        NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
     }
 
     func saveClipboardHistory(history: [ClipboardHistory]) throws {
         let data = try JSONEncoder().encode(history)
         guard let outfile = try Self.fileURL(type: .clipboardHistory) else { return }
         try data.write(to: outfile)
+
+        // 데이터 변경 알림 전송 (자동 백업 트리거)
+        NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
     }
     
     func load(type: MemoType) throws -> [Memo] {
@@ -191,6 +197,9 @@ class MemoStore: ObservableObject {
         let data = try JSONEncoder().encode(history)
         guard let outfile = try Self.fileURL(type: .smartClipboardHistory) else { return }
         try data.write(to: outfile)
+
+        // 데이터 변경 알림 전송 (자동 백업 트리거)
+        NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
     }
 
     /// 스마트 클립보드 히스토리 로드
@@ -538,6 +547,9 @@ class MemoStore: ObservableObject {
         DispatchQueue.main.async {
             self.combos = combos
         }
+
+        // 데이터 변경 알림 전송 (자동 백업 트리거)
+        NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
     }
 
     /// Combo 목록 로드

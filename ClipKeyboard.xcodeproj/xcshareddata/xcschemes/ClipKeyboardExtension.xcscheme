@@ -30,8 +30,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "58C473372A109F0C009D87BC"
-               BuildableName = "Token memo.app"
-               BlueprintName = "Token memo"
+               BuildableName = "ClipKeyboard.app"
+               BlueprintName = "ClipKeyboard"
                ReferencedContainer = "container:ClipKeyboard.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -61,8 +61,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9CA0A4022F19D9B3004ABF40"
-               BuildableName = "TokenMemoTests.xctest"
-               BlueprintName = "TokenMemoTests"
+               BuildableName = "ClipKeyboardTests.xctest"
+               BlueprintName = "ClipKeyboardTests"
                ReferencedContainer = "container:ClipKeyboard.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -89,8 +89,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "58C473372A109F0C009D87BC"
-            BuildableName = "Token memo.app"
-            BlueprintName = "Token memo"
+            BuildableName = "ClipKeyboard.app"
+            BlueprintName = "ClipKeyboard"
             ReferencedContainer = "container:ClipKeyboard.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -108,8 +108,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "58C473372A109F0C009D87BC"
-            BuildableName = "Token memo.app"
-            BlueprintName = "Token memo"
+            BuildableName = "ClipKeyboard.app"
+            BlueprintName = "ClipKeyboard"
             ReferencedContainer = "container:ClipKeyboard.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

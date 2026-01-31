@@ -80,6 +80,10 @@ class CloudKitBackupService: ObservableObject {
     @Published var lastBackupDate: Date?
     @Published var isBackingUp: Bool = false
     @Published var isRestoring: Bool = false
+    @Published var autoBackupEnabled: Bool = false
+
+    private var autoBackupTimer: Timer?
+    private let autoBackupInterval: TimeInterval = 300 // 5분마다 자동 백업
 
     private init() {
         self.container = CKContainer(identifier: "iCloud.com.Ysoup.TokenMemo")
@@ -87,6 +91,15 @@ class CloudKitBackupService: ObservableObject {
 
         checkAccountStatus()
         loadLastBackupDate()
+        loadAutoBackupSetting()
+
+        // 데이터 변경 알림 리스너 등록
+        setupDataChangeListener()
+    }
+
+    deinit {
+        autoBackupTimer?.invalidate()
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Account Status
@@ -109,6 +122,100 @@ class CloudKitBackupService: ObservableObject {
     private func saveLastBackupDate(_ date: Date) {
         UserDefaults.standard.set(date, forKey: "lastBackupDate")
         self.lastBackupDate = date
+    }
+
+    private func loadAutoBackupSetting() {
+        self.autoBackupEnabled = UserDefaults.standard.bool(forKey: "autoBackupEnabled")
+        if autoBackupEnabled {
+            startAutoBackupTimer()
+        }
+    }
+
+    // MARK: - Auto Backup
+
+    func enableAutoBackup() {
+        print("🔄 [CloudKit] 자동 백업 활성화")
+        UserDefaults.standard.set(true, forKey: "autoBackupEnabled")
+        DispatchQueue.main.async {
+            self.autoBackupEnabled = true
+        }
+        startAutoBackupTimer()
+    }
+
+    func disableAutoBackup() {
+        print("⏸️ [CloudKit] 자동 백업 비활성화")
+        UserDefaults.standard.set(false, forKey: "autoBackupEnabled")
+        DispatchQueue.main.async {
+            self.autoBackupEnabled = false
+        }
+        stopAutoBackupTimer()
+    }
+
+    private func startAutoBackupTimer() {
+        stopAutoBackupTimer() // 기존 타이머 제거
+
+        autoBackupTimer = Timer.scheduledTimer(withTimeInterval: autoBackupInterval, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            guard self.isAuthenticated && !self.isBackingUp else { return }
+
+            Task {
+                do {
+                    try await self.backupData()
+                    print("✅ [CloudKit] 자동 백업 성공")
+                } catch {
+                    print("⚠️ [CloudKit] 자동 백업 실패: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        print("⏰ [CloudKit] 자동 백업 타이머 시작 (간격: \(Int(autoBackupInterval))초)")
+    }
+
+    private func stopAutoBackupTimer() {
+        autoBackupTimer?.invalidate()
+        autoBackupTimer = nil
+        print("⏹️ [CloudKit] 자동 백업 타이머 중지")
+    }
+
+    private func setupDataChangeListener() {
+        // MemoStore에서 데이터 변경 알림을 받으면 자동 백업 트리거
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("MemoDataChanged"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            guard self.autoBackupEnabled && self.isAuthenticated && !self.isBackingUp else { return }
+
+            print("📢 [CloudKit] 데이터 변경 감지 - 자동 백업 예약")
+
+            // 변경사항이 연속으로 발생할 수 있으므로 디바운스 (5초 후 실행)
+            self.scheduleAutoBackup()
+        }
+    }
+
+    private var autoBackupWorkItem: DispatchWorkItem?
+
+    private func scheduleAutoBackup() {
+        // 기존 예약된 백업 취소
+        autoBackupWorkItem?.cancel()
+
+        // 새로운 백업 예약 (5초 후)
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+
+            Task {
+                do {
+                    try await self.backupData()
+                    print("✅ [CloudKit] 변경사항 자동 백업 완료")
+                } catch {
+                    print("⚠️ [CloudKit] 자동 백업 실패: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        autoBackupWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: workItem)
     }
 
     // MARK: - Helper Methods
@@ -269,11 +376,46 @@ class CloudKitBackupService: ObservableObject {
 
     // MARK: - Restore
 
-    func restoreData() async throws {
+    /// 로컬에 데이터가 있는지 확인
+    func hasLocalData() -> Bool {
+        do {
+            let memos = try MemoStore.shared.load(type: .tokenMemo)
+            let smartClipboard = try MemoStore.shared.loadSmartClipboardHistory()
+            let combos = try MemoStore.shared.loadCombos()
+
+            let totalCount = memos.count + smartClipboard.count + combos.count
+            print("📊 [CloudKit] 로컬 데이터 확인: 메모 \(memos.count)개, 클립보드 \(smartClipboard.count)개, Combo \(combos.count)개")
+
+            return totalCount > 0
+        } catch {
+            print("⚠️ [CloudKit] 로컬 데이터 확인 실패: \(error)")
+            return false
+        }
+    }
+
+    /// 복원 (기존 데이터 덮어쓰기 여부를 외부에서 확인 필요)
+    /// - Parameter forceOverwrite: true면 확인 없이 덮어쓰기, false면 호출 전에 hasLocalData()로 확인 필요
+    func restoreData(forceOverwrite: Bool = false) async throws {
         print("☁️ [CloudKit] 복구 시작...")
 
         guard isAuthenticated else {
             throw CloudKitError.notAuthenticated
+        }
+
+        // 로컬 데이터가 있고 forceOverwrite가 false인 경우 에러 throw
+        // UI에서 사용자 확인을 받아야 함
+        if !forceOverwrite && hasLocalData() {
+            print("⚠️ [CloudKit] 기존 데이터 존재 - 사용자 확인 필요")
+            throw CloudKitError.restoreFailed(
+                NSError(
+                    domain: "CloudKitBackup",
+                    code: -2,
+                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
+                        "기존 데이터가 있습니다. 복원하면 현재 데이터가 모두 삭제됩니다. 계속하시겠습니까?",
+                        comment: "Restore confirmation message"
+                    )]
+                )
+            )
         }
 
         await MainActor.run {
@@ -359,19 +501,6 @@ class CloudKitBackupService: ObservableObject {
                 print("📦 [CloudKit] 복구할 Combo (레거시): \(combos.count)개")
             } else {
                 print("ℹ️ [CloudKit] Combo 데이터 없음")
-            }
-
-            // 이전 형식 호환성을 위해 남겨둔 코드 삭제
-            // 5. 데이터 저장으로 계속...
-            if let combosData = record["combos"] as? Data {
-                if let decoded = try? JSONDecoder().decode([Combo].self, from: combosData) {
-                    combos = decoded
-                    print("📦 [CloudKit] 복구할 Combo: \(combos.count)개")
-                } else {
-                    print("⚠️ [CloudKit] Combo 디코딩 실패 - 건너뛰기")
-                }
-            } else {
-                print("ℹ️ [CloudKit] Combo 데이터 없음 (레거시 백업일 수 있음)")
             }
 
             // 5. 로컬에 저장
