@@ -73,6 +73,7 @@ class KeyboardViewController: UIInputViewController {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.heightAnchor.constraint(equalToConstant: 38).isActive = true
+        button.widthAnchor.constraint(greaterThanOrEqualToConstant: 150).isActive = true
         button.layer.cornerRadius = 8
         button.setTitle("Space", for: UIControl.State.normal)
         button.titleLabel!.font = .systemFont(ofSize: 14, weight: .medium)
@@ -85,11 +86,13 @@ class KeyboardViewController: UIInputViewController {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.heightAnchor.constraint(equalToConstant: 38).isActive = true
+        button.widthAnchor.constraint(equalToConstant: 65).isActive = true
         button.layer.cornerRadius = 8
-        button.setTitle("Return", for: UIControl.State.normal)
-        button.titleLabel!.font = .systemFont(ofSize: 14, weight: .medium)
+        button.setTitle(NSLocalizedString("Return", comment: "Return key"), for: UIControl.State.normal)
+        button.titleLabel!.font = .systemFont(ofSize: 13, weight: .medium)
         button.backgroundColor = UIColor.systemBlue
         button.setTitleColor(UIColor.white, for: UIControl.State.normal)
+        button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
         return button
     }()
 

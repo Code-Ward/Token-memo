@@ -135,6 +135,9 @@
         }
       }
     },
+    "%lld개 값" : {
+
+    },
     "%lld개 변수" : {
       "localizations" : {
         "en" : {
@@ -204,6 +207,9 @@
           }
         }
       }
+    },
+    "•" : {
+
     },
     "• 백업 데이터는 iCloud에 안전하게 저장됩니다" : {
       "comment" : "Backup info 3",
@@ -393,6 +399,9 @@
         }
       }
     },
+    "12가1234" : {
+      "comment" : "Vehicle plate placeholder"
+    },
     "App Store 페이지에서 직접 작성합니다" : {
       "comment" : "App Store review description",
       "localizations" : {
@@ -460,7 +469,7 @@
       }
     },
     "Combo" : {
-      "comment" : "Combo toggle",
+      "comment" : "Combo tab\nCombo toggle",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -795,7 +804,6 @@
     },
     "Next Keyboard" : {
       "comment" : "Title for 'Next Keyboard' button",
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -835,6 +843,9 @@
           }
         }
       }
+    },
+    "Return" : {
+      "comment" : "Return key"
     },
     "Send Email" : {
       "localizations" : {
@@ -973,7 +984,6 @@
       }
     },
     "값을 선택하면 자동으로 입력됩니다" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -994,7 +1004,6 @@
       }
     },
     "값이 등록되지 않았습니다" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1232,6 +1241,17 @@
         }
       }
     },
+    "날짜" : {
+      "comment" : "Date template button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        }
+      }
+    },
     "내용" : {
       "localizations" : {
         "en" : {
@@ -1241,6 +1261,9 @@
           }
         }
       }
+    },
+    "내용을 입력하세요" : {
+      "comment" : "Default placeholder"
     },
     "네트워크 연결을 확인하고 다시 시도해주세요." : {
       "comment" : "Network error message",
@@ -1274,6 +1297,9 @@
           }
         }
       }
+    },
+    "다음: %lld" : {
+
     },
     "다크" : {
       "extractionState" : "stale",
@@ -1476,7 +1502,7 @@
       }
     },
     "메모" : {
-      "comment" : "Memo",
+      "comment" : "Memo\nMemo tab",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2259,6 +2285,9 @@
         }
       }
     },
+    "서울시 강남구 테헤란로 123" : {
+      "comment" : "Address placeholder"
+    },
     "선택하신 항목에 맞는 템플릿을 자동으로 추가해드려요" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2399,6 +2428,17 @@
         }
       }
     },
+    "시간" : {
+      "comment" : "Time template button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
     "시스템" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2443,6 +2483,7 @@
       }
     },
     "안녕하세요 {이름}님, {날짜} {시간}에 미팅이 예정되어 있습니다." : {
+      "comment" : "Template example text",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2519,7 +2560,7 @@
       }
     },
     "앱에서 Combo를 생성해보세요" : {
-      "extractionState" : "stale",
+      "comment" : "Empty combo list description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2530,7 +2571,6 @@
       }
     },
     "앱을 열어 플레이스홀더 관리에서\n'%@' 값을 추가해주세요" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2627,6 +2667,7 @@
       }
     },
     "예시" : {
+      "comment" : "Example label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2680,7 +2721,7 @@
       }
     },
     "완료" : {
-      "comment" : "Done",
+      "comment" : "Done\nDone button",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2775,7 +2816,6 @@
       }
     },
     "이 템플릿에는 설정할 값이 없어요.\n다시 시도해주세요." : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2807,7 +2847,7 @@
       }
     },
     "이름" : {
-      "comment" : "Name",
+      "comment" : "Name\nName template button",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2941,6 +2981,9 @@
           }
         }
       }
+    },
+    "입력 중..." : {
+
     },
     "입력하세요" : {
       "localizations" : {
@@ -3191,6 +3234,17 @@
         }
       }
     },
+    "전화" : {
+      "comment" : "Phone template button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phone"
+          }
+        }
+      }
+    },
     "전화번호" : {
       "comment" : "Phone Number",
       "localizations" : {
@@ -3267,7 +3321,7 @@
       }
     },
     "주소" : {
-      "comment" : "Address",
+      "comment" : "Address\nAddress template button",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3840,7 +3894,6 @@
       }
     },
     "템플릿 값 선택" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3893,7 +3946,6 @@
       }
     },
     "템플릿 변수가 없습니다" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3904,6 +3956,7 @@
       }
     },
     "템플릿 변수는 {날짜}, {시간}, {이름} 형식으로 작성하세요" : {
+      "comment" : "Template variable instruction",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4135,6 +4188,9 @@
           }
         }
       }
+    },
+    "홍길동" : {
+      "comment" : "Name placeholder"
     },
     "화면에 표시될 버튼의 열 개수를 선택하세요. 열이 많을수록 더 많은 버튼을 한 눈에 볼 수 있습니다." : {
       "localizations" : {

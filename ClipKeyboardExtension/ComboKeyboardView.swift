@@ -37,11 +37,11 @@ struct ComboKeyboardView: View {
                         .font(.system(size: 50))
                         .foregroundColor(.gray.opacity(0.5))
 
-                    Text("Combo가 없습니다")
+                    Text(NSLocalizedString("Combo가 없습니다", comment: "Empty combo list title"))
                         .font(.headline)
                         .foregroundColor(.secondary)
 
-                    Text("앱에서 Combo를 생성해보세요")
+                    Text(NSLocalizedString("앱에서 Combo를 생성해보세요", comment: "Empty combo list description"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

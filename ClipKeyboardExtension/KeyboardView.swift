@@ -197,8 +197,8 @@ struct KeyboardView: View {
         VStack(spacing: 0) {
             // 탭 선택
             Picker("", selection: $selectedTab) {
-                Text("메모").tag(0)
-                Text("Combo").tag(1)
+                Text(NSLocalizedString("메모", comment: "Memo tab")).tag(0)
+                Text(NSLocalizedString("Combo", comment: "Combo tab")).tag(1)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 12)

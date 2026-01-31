@@ -135,11 +135,11 @@ struct MemoAdd: View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 8) {
                                         // 템플릿 변수 버튼들
-                                        templateButton(title: "날짜", variable: "{날짜}")
-                                        templateButton(title: "시간", variable: "{시간}")
-                                        templateButton(title: "이름", variable: "{이름}")
-                                        templateButton(title: "주소", variable: "{주소}")
-                                        templateButton(title: "전화", variable: "{전화}")
+                                        templateButton(title: NSLocalizedString("날짜", comment: "Date template button"), variable: "{날짜}")
+                                        templateButton(title: NSLocalizedString("시간", comment: "Time template button"), variable: "{시간}")
+                                        templateButton(title: NSLocalizedString("이름", comment: "Name template button"), variable: "{이름}")
+                                        templateButton(title: NSLocalizedString("주소", comment: "Address template button"), variable: "{주소}")
+                                        templateButton(title: NSLocalizedString("전화", comment: "Phone template button"), variable: "{전화}")
                                     }
                                 }
 
@@ -149,7 +149,7 @@ struct MemoAdd: View {
                                 Button {
                                     isFocused = false
                                 } label: {
-                                    Text("완료")
+                                    Text(NSLocalizedString("완료", comment: "Done button"))
                                         .fontWeight(.semibold)
                                 }
                             }
@@ -184,7 +184,7 @@ struct MemoAdd: View {
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 10)
                         .background(Color(.systemGray6))
                         .cornerRadius(12)
                     }
@@ -318,14 +318,14 @@ struct MemoAdd: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 10)
                         .background(Color.accentColor)
                         .cornerRadius(12)
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
-                .padding(.bottom, 12)
+                .padding(.bottom, 48)
             }
             .background(Color(.systemBackground))
             .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: -2)
@@ -618,18 +618,18 @@ struct MemoAdd: View {
                     Image(systemName: "info.circle.fill")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("템플릿 변수는 {날짜}, {시간}, {이름} 형식으로 작성하세요")
+                    Text(NSLocalizedString("템플릿 변수는 {날짜}, {시간}, {이름} 형식으로 작성하세요", comment: "Template variable instruction"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("예시")
+                    Text(NSLocalizedString("예시", comment: "Example label"))
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
 
-                    Text("안녕하세요 {이름}님, {날짜} {시간}에 미팅이 예정되어 있습니다.")
+                    Text(NSLocalizedString("안녕하세요 {이름}님, {날짜} {시간}에 미팅이 예정되어 있습니다.", comment: "Template example text"))
                         .font(.caption)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1015,23 +1015,31 @@ struct MemoAdd: View {
             print("✅ [OCR] 인식된 텍스트: \(allTexts)")
 
             // 카테고리에 따라 파싱 및 자동 입력
-            if selectedCategory == "카드번호" {
-                let cardInfo = OCRService.shared.parseCardInfo(from: allTexts)
+            if let categoryType = ClipboardItemType(rawValue: selectedCategory) {
+                switch categoryType {
+                case .creditCard:
+                    let cardInfo = OCRService.shared.parseCardInfo(from: allTexts)
 
-                if let cardNumber = cardInfo["카드번호"] {
-                    value = cardNumber
-                    print("💳 [OCR] 카드번호 인식: \(cardNumber)")
-                }
+                    if let cardNumber = cardInfo["카드번호"] {
+                        value = cardNumber
+                        print("💳 [OCR] 카드번호 인식: \(cardNumber)")
+                    }
 
-                if let expiryDate = cardInfo["유효기간"] {
-                    // 유효기간은 메모나 추가 필드에 넣을 수 있음
-                    print("📅 [OCR] 유효기간 인식: \(expiryDate)")
-                }
-            } else if selectedCategory == "주소" {
-                let address = OCRService.shared.parseAddress(from: allTexts)
-                if !address.isEmpty {
-                    value = address
-                    print("🏠 [OCR] 주소 인식: \(address)")
+                    if let expiryDate = cardInfo["유효기간"] {
+                        // 유효기간은 메모나 추가 필드에 넣을 수 있음
+                        print("📅 [OCR] 유효기간 인식: \(expiryDate)")
+                    }
+
+                case .address:
+                    let address = OCRService.shared.parseAddress(from: allTexts)
+                    if !address.isEmpty {
+                        value = address
+                        print("🏠 [OCR] 주소 인식: \(address)")
+                    }
+
+                default:
+                    // 일반 텍스트로 처리
+                    value = allTexts.joined(separator: "\n")
                 }
             } else {
                 // 일반 텍스트로 처리
@@ -1469,33 +1477,41 @@ struct ContentInputSection: View {
     }
 
     private var placeholderText: String {
-        switch selectedCategory {
-        case "이메일": return "example@email.com"
-        case "전화번호": return "010-1234-5678"
-        case "주소": return "서울시 강남구 테헤란로 123"
-        case "URL": return "https://example.com"
-        case "카드번호": return "1234-5678-9012-3456"
-        case "계좌번호": return "123-456789-12-345"
-        case "여권번호": return "M12345678"
-        case "통관부호": return "P123456789012"
-        case "우편번호": return "12345"
-        case "이름": return "홍길동"
-        case "생년월일": return "1990-01-01"
-        case "주민등록번호": return "900101-1234567"
-        case "사업자등록번호": return "123-45-67890"
-        case "차량번호": return "12가1234"
-        case "IP주소": return "192.168.0.1"
-        default: return "내용을 입력하세요"
+        guard let type = ClipboardItemType(rawValue: selectedCategory) else {
+            return NSLocalizedString("내용을 입력하세요", comment: "Default placeholder")
+        }
+
+        switch type {
+        case .email: return "example@email.com"
+        case .phone: return "010-1234-5678"
+        case .address: return NSLocalizedString("서울시 강남구 테헤란로 123", comment: "Address placeholder")
+        case .url: return "https://example.com"
+        case .creditCard: return "1234-5678-9012-3456"
+        case .bankAccount: return "123-456789-12-345"
+        case .passportNumber: return "M12345678"
+        case .customsCode: return "P123456789012"
+        case .postalCode: return "12345"
+        case .name: return NSLocalizedString("홍길동", comment: "Name placeholder")
+        case .birthDate: return "1990-01-01"
+        case .rrn: return "900101-1234567"
+        case .businessNumber: return "123-45-67890"
+        case .vehiclePlate: return NSLocalizedString("12가1234", comment: "Vehicle plate placeholder")
+        case .ipAddress: return "192.168.0.1"
+        default: return NSLocalizedString("내용을 입력하세요", comment: "Default placeholder")
         }
     }
 
     private var keyboardTypeForTheme: UIKeyboardType {
-        switch selectedCategory {
-        case "이메일": return .emailAddress
-        case "전화번호", "카드번호", "계좌번호", "우편번호", "주민등록번호", "사업자등록번호": return .numberPad
-        case "IP주소": return .decimalPad
-        case "URL": return .URL
-        case "생년월일": return .numberPad
+        guard let type = ClipboardItemType(rawValue: selectedCategory) else {
+            return .default
+        }
+
+        switch type {
+        case .email: return .emailAddress
+        case .phone, .creditCard, .bankAccount, .postalCode, .rrn, .businessNumber: return .numberPad
+        case .ipAddress: return .decimalPad
+        case .url: return .URL
+        case .birthDate: return .numberPad
         default: return .default
         }
     }
@@ -1665,6 +1681,10 @@ enum EmojiCategory: String, CaseIterable {
         }
     }
 
+    var localizedName: String {
+        return NSLocalizedString(self.rawValue, comment: "Emoji category name")
+    }
+
     var emojis: [String] {
         switch self {
         case .recent:
@@ -1771,7 +1791,7 @@ struct CategoryTabButton: View {
             VStack(spacing: 4) {
                 Image(systemName: category.icon)
                     .font(.system(size: 20))
-                Text(category.rawValue)
+                Text(category.localizedName)
                     .font(.caption2)
             }
             .foregroundColor(isSelected ? .blue : .secondary)
