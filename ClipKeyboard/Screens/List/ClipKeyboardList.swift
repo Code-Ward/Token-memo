@@ -147,29 +147,29 @@ struct ClipKeyboardList: View {
                 shortcutMemoOverlay
             })
             .onAppear {
-                print("🎬 [TokenMemoList] onAppear 시작")
+                print("🎬 [ClipKeyboardList] onAppear 시작")
 
                 // 저장된 필터 타입 로드
                 loadSavedFilter()
 
                 // load
                 do {
-                    print("📂 [TokenMemoList] 메모 로드 시작...")
+                    print("📂 [ClipKeyboardList] 메모 로드 시작...")
                     let loadedMemos = try MemoStore.shared.load(type: .tokenMemo)
-                    print("📊 [TokenMemoList] 로드된 메모 개수: \(loadedMemos.count)")
+                    print("📊 [ClipKeyboardList] 로드된 메모 개수: \(loadedMemos.count)")
 
                     // 기본 템플릿 제공 (최초 1회) - 비활성화
                     // DefaultTemplates.provideDefaultTemplatesIfNeeded(to: MemoStore.shared)
 
                     tokenMemos = sortMemos(loadedMemos)
-                    print("🔄 [TokenMemoList] 메모 정렬 완료")
-                    print("📋 [TokenMemoList] 정렬 후 메모 리스트:")
+                    print("🔄 [ClipKeyboardList] 메모 정렬 완료")
+                    print("📋 [ClipKeyboardList] 정렬 후 메모 리스트:")
                     for (index, memo) in tokenMemos.enumerated() {
                         print("   [\(index)] \(memo.title) - 즐겨찾기: \(memo.isFavorite), 수정일: \(memo.lastEdited)")
                     }
 
                     loadedData = tokenMemos
-                    print("✅ [TokenMemoList] loadedData에 메모 저장 완료")
+                    print("✅ [ClipKeyboardList] loadedData에 메모 저장 완료")
 
                     // 기존 메모 자동 분류 마이그레이션
                     migrateExistingMemosClassification()
@@ -178,31 +178,31 @@ struct ClipKeyboardList: View {
                     applyFilters()
 
                 } catch {
-                    print("❌ [TokenMemoList] 메모 로드 실패: \(error.localizedDescription)")
+                    print("❌ [ClipKeyboardList] 메모 로드 실패: \(error.localizedDescription)")
                     fatalError(error.localizedDescription)
                 }
 
                 // 클립보드 자동 확인 기능 - 클립보드에 내용이 있으면 바로가기 시트 표시
                 // iOS 14+에서 처음 실행 시 "Allow Paste" 알림이 뜰 수 있습니다
                 // 한 번 허용하면 이후에는 알림 없이 작동합니다
-                print("📋 [TokenMemoList] 클립보드 확인 중...")
+                print("📋 [ClipKeyboardList] 클립보드 확인 중...")
                 let hasClipboard = !(UIPasteboard.general.string?.isEmpty ?? true)
-                print("📋 [TokenMemoList] 클립보드 내용 있음: \(hasClipboard), isFirstVisit: \(isFirstVisit)")
+                print("📋 [ClipKeyboardList] 클립보드 내용 있음: \(hasClipboard), isFirstVisit: \(isFirstVisit)")
 
                 if hasClipboard, isFirstVisit {
-                    print("🎯 [TokenMemoList] 클립보드 바로가기 시트 표시 예약")
+                    print("🎯 [ClipKeyboardList] 클립보드 바로가기 시트 표시 예약")
 
                     value = UIPasteboard.general.string ?? "error"
-                    print("📝 [TokenMemoList] 클립보드 값: \(value)")
+                    print("📝 [ClipKeyboardList] 클립보드 값: \(value)")
 
                     // 자동 분류 수행
                     let classification = ClipboardClassificationService.shared.classify(content: value)
                     clipboardDetectedType = classification.type
                     clipboardConfidence = classification.confidence
-                    print("🔍 [TokenMemoList] 자동 분류: \(classification.type.rawValue) (신뢰도: \(Int(classification.confidence * 100))%)")
+                    print("🔍 [ClipKeyboardList] 자동 분류: \(classification.type.rawValue) (신뢰도: \(Int(classification.confidence * 100))%)")
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        print("📱 [TokenMemoList] 바로가기 시트 표시")
+                        print("📱 [ClipKeyboardList] 바로가기 시트 표시")
                         showShortcutSheet = true
                     }
 
@@ -210,9 +210,9 @@ struct ClipKeyboardList: View {
                 }
 
                 fontSize = UserDefaults.standard.object(forKey: "fontSize") as? CGFloat ?? 20.0
-                print("🔤 [TokenMemoList] 폰트 크기: \(fontSize)")
+                print("🔤 [ClipKeyboardList] 폰트 크기: \(fontSize)")
 
-                print("✅ [TokenMemoList] onAppear 완료")
+                print("✅ [ClipKeyboardList] onAppear 완료")
             }
         }
     }
@@ -780,9 +780,9 @@ struct ClipKeyboardList: View {
     }
 }
 
-struct TokenMemoList_Previews: PreviewProvider {
+struct ClipKeyboardList_Previews: PreviewProvider {
     static var previews: some View {
-        TokenMemoList()
+        ClipKeyboardList()
     }
 }
 
