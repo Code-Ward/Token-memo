@@ -572,38 +572,45 @@ struct ClipKeyboardList: View {
         VStack(spacing: 24) {
             Spacer()
 
-            Text(NSLocalizedString("자주 치는 문장이 뭔가요?", comment: "Empty state question"))
-                .font(.title3)
-                .fontWeight(.medium)
+            VStack(spacing: 24) {
+                Text(NSLocalizedString("자주 치는 문장이 뭔가요?", comment: "Empty state question"))
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .multilineTextAlignment(.center)
+
+                VStack(spacing: 10) {
+                    Text(NSLocalizedString("지금 가는 중", comment: "Empty state example 1"))
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text(NSLocalizedString("감사합니다", comment: "Empty state example 2"))
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
                 .multilineTextAlignment(.center)
 
-            VStack(spacing: 10) {
-                Text(NSLocalizedString("지금 가는 중", comment: "Empty state example 1"))
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                Text(NSLocalizedString("감사합니다", comment: "Empty state example 2"))
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                NavigationLink {
+                    MemoAdd()
+                } label: {
+                    Text(NSLocalizedString("첫 클립 추가", comment: "Add first clip button"))
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(height: 44)
+                        .padding(.horizontal, 24)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                .padding(.top, 8)
             }
-            .multilineTextAlignment(.center)
-
-            NavigationLink {
-                MemoAdd()
-            } label: {
-                Text(NSLocalizedString("첫 클립 추가", comment: "Add first clip button"))
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .frame(height: 44)
-                    .padding(.horizontal, 24)
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
-            .padding(.top, 8)
+            .padding(.vertical, 40)
+            .padding(.horizontal, 30)
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(20)
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 2)
 
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 30)
+        .padding(.horizontal, 20)
     }
     
     private func showToast(message: String) {
