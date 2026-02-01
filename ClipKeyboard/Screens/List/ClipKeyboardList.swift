@@ -406,7 +406,7 @@ struct ClipKeyboardList: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
                 .background(Color(white: 0.11, opacity: 0.9))
-                .clipShape(Capsule())
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
                 .onTapGesture {
                     showToast = false
