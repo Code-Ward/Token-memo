@@ -231,9 +231,18 @@ struct MemoAdd: View {
                                 contentType = .text
                             }
 
-                            // 카테고리 결정: 자동 분류가 있으면 우선 사용, 없으면 선택한 카테고리 사용
-                            let finalCategory = autoDetectedType?.rawValue ?? selectedCategory
-                            print("🎨 [MemoAdd] 테마 선택 - 사용자 선택: '\(selectedCategory)', 자동 분류: '\(autoDetectedType?.rawValue ?? "없음")', 최종: '\(finalCategory)'")
+                            // 카테고리 결정: 사용자가 선택한 카테고리 우선 사용
+                            // 사용자가 기본값(텍스트)을 그대로 두었고 자동 분류 결과가 있으면 자동 분류 사용
+                            let finalCategory: String
+                            if selectedCategory == "텍스트" && autoDetectedType != nil && autoDetectedType != .text {
+                                // 기본값이고 자동 분류가 텍스트가 아니면 자동 분류 사용
+                                finalCategory = autoDetectedType!.rawValue
+                                print("🎨 [MemoAdd] 테마 - 기본값 사용 중 → 자동 분류 적용: '\(finalCategory)'")
+                            } else {
+                                // 사용자가 의도적으로 선택한 경우 사용자 선택 우선
+                                finalCategory = selectedCategory
+                                print("🎨 [MemoAdd] 테마 - 사용자 선택 우선: '\(finalCategory)' (자동 분류: '\(autoDetectedType?.rawValue ?? "없음")')")
+                            }
 
                             let finalMemoId: UUID
                             let finalMemoTitle: String

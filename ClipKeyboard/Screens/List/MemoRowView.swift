@@ -14,10 +14,17 @@ struct MemoRowView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
+            // 카테고리 아이콘
+            categoryIcon
+                .font(.system(size: 20))
+                .foregroundColor(categoryColor)
+                .frame(width: 32, height: 32)
+                .background(categoryColor.opacity(0.15))
+                .cornerRadius(8)
+
             VStack(alignment: .leading, spacing: 4) {
-                Label(memo.title,
-                      systemImage: memo.isChecked ? "checkmark.square.fill" : "doc.on.doc.fill")
-                .font(.system(size: fontSize))
+                Text(memo.title)
+                    .font(.system(size: fontSize))
 
                 HStack(spacing: 6) {
                 if memo.isSecure {
@@ -52,6 +59,22 @@ struct MemoRowView: View {
                 #endif
             }
         }
+    }
+
+    /// 카테고리 아이콘
+    private var categoryIcon: Image {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return Image(systemName: type.icon)
+        }
+        return Image(systemName: "doc.text")
+    }
+
+    /// 카테고리 색상
+    private var categoryColor: Color {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return colorFor(type.color)
+        }
+        return .gray
     }
 
     /// 카테고리명을 다국어 지원 이름으로 변환
