@@ -579,10 +579,10 @@ struct ClipKeyboardList: View {
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 10) {
-                    Text(NSLocalizedString("지금 가는 중", comment: "Empty state example 1"))
+                    Text("\"\(NSLocalizedString("회의가 10분 늦어질 것 같습니다", comment: "Empty state example 1"))\"")
                         .font(.body)
                         .foregroundColor(.secondary)
-                    Text(NSLocalizedString("감사합니다", comment: "Empty state example 2"))
+                    Text("\"\(NSLocalizedString("확인했습니다. 검토 후 답변드리겠습니다", comment: "Empty state example 2"))\"")
                         .font(.body)
                         .foregroundColor(.secondary)
                 }
