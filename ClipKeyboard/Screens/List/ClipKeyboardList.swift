@@ -233,6 +233,7 @@ struct ClipKeyboardList: View {
 
             if !searchQueryString.isEmpty {
                 Button(action: {
+                    HapticManager.shared.soft()
                     searchQueryString = ""
                 }) {
                     Image(systemName: "xmark.circle.fill")
@@ -353,6 +354,7 @@ struct ClipKeyboardList: View {
     @ViewBuilder
     private var toolbarButtons: some View {
         Button {
+            HapticManager.shared.light()
             withAnimation {
                 isSearchBarVisible.toggle()
                 if !isSearchBarVisible {
@@ -379,6 +381,7 @@ struct ClipKeyboardList: View {
         }
 
         Button {
+            HapticManager.shared.light()
             showPlaceholderManagementSheet = true
         } label: {
             Image(systemName: "list.bullet")
@@ -405,10 +408,11 @@ struct ClipKeyboardList: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(white: 0.11, opacity: 0.9))
+                .background(Color.toastBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
                 .onTapGesture {
+                    HapticManager.shared.soft()
                     showToast = false
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))

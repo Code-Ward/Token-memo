@@ -46,6 +46,32 @@ extension Color {
                      lroundf(g * 255),
                      lroundf(b * 255))
     }
+
+    // MARK: - Design System Colors
+
+    /// Toast background color
+    static var toastBackground: Color {
+        Color(UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 0.9))
+    }
+
+    /// Toast text color
+    static let toastText = Color.white
+
+    /// Secure/Lock icon color
+    static let appSecureIcon = Color.orange
+
+    /// Template icon color
+    static let appTemplateIcon = Color.purple
+
+    /// Button background (light overlay)
+    static var appButtonBackground: Color {
+        Color(UIColor.systemGray5)
+    }
+
+    /// Onboarding overlay background
+    static var appOnboardingOverlay: Color {
+        Color.white.opacity(0.15)
+    }
 }
 
 // MARK: - UIImage Extensions for Clipboard
@@ -103,3 +129,81 @@ extension UIImage {
         }
     }
 }
+
+// MARK: - Haptic Feedback Manager
+#if canImport(UIKit)
+struct HapticManager {
+    static let shared = HapticManager()
+    private init() {}
+
+    /// Light impact - for button taps, toggles
+    func light() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+
+    /// Medium impact - for significant actions
+    func medium() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+
+    /// Heavy impact - for important completions
+    func heavy() {
+        let generator = UIImpactFeedbackGenerator(style: .heavy)
+        generator.impactOccurred()
+    }
+
+    /// Success notification - for successful operations
+    func success() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+    }
+
+    /// Warning notification - for warnings
+    func warning() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
+    }
+
+    /// Error notification - for errors
+    func error() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
+
+    /// Selection changed - for picker changes
+    func selection() {
+        let generator = UISelectionFeedbackGenerator()
+        generator.selectionChanged()
+    }
+
+    /// Rigid impact - for delete actions
+    func rigid() {
+        let generator = UIImpactFeedbackGenerator(style: .rigid)
+        generator.impactOccurred()
+    }
+
+    /// Soft impact - for subtle interactions
+    func soft() {
+        let generator = UIImpactFeedbackGenerator(style: .soft)
+        generator.impactOccurred()
+    }
+}
+#else
+// macOS fallback - no haptics
+struct HapticManager {
+    static let shared = HapticManager()
+    private init() {}
+
+    func light() {}
+    func medium() {}
+    func heavy() {}
+    func success() {}
+    func warning() {}
+    func error() {}
+    func selection() {}
+    func rigid() {}
+    func soft() {}
+}
+#endif
