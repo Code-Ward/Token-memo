@@ -93,6 +93,17 @@
         }
       }
     },
+    "%d열": {
+      "comment": "Column count option\nColumn count value",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d Columns"
+          }
+        }
+      }
+    },
     "%lld": {
       "localizations": {
         "en": {
@@ -176,6 +187,7 @@
       }
     },
     "%lld열": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -296,6 +308,7 @@
       }
     },
     "⚙️ 키보드 레이아웃 설정": {
+      "comment": "Keyboard layout settings header",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -320,6 +333,7 @@
       "comment": "Restore with data warning message"
     },
     "⭐️ 리뷰 및 평점 매기기": {
+      "comment": "Review and rating header",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1185,6 +1199,7 @@
       }
     },
     "글자 크기": {
+      "comment": "Font size label",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1236,6 +1251,7 @@
       }
     },
     "기본값으로 되돌리기": {
+      "comment": "Reset to defaults button",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1348,7 +1364,15 @@
       }
     },
     "데이터": {
-      "comment": "Data section"
+      "comment": "Data section",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data"
+          }
+        }
+      }
     },
     "데이터 관리": {
       "comment": "Data management section",
@@ -1455,6 +1479,7 @@
       }
     },
     "레이아웃 설정": {
+      "comment": "Layout settings title",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1465,7 +1490,15 @@
       }
     },
     "리뷰 남기기": {
-      "comment": "Leave review"
+      "comment": "Leave review",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave a Review"
+          }
+        }
+      }
     },
     "리뷰 및 평점": {
       "comment": "Review navigation title",
@@ -1721,7 +1754,15 @@
       }
     },
     "문의하기": {
-      "comment": "Contact"
+      "comment": "Contact",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact"
+          }
+        }
+      }
     },
     "문제가 발생했습니다. 네트워크 연결과 iCloud 상태를 확인하고 다시 시도해주세요.": {
       "comment": "Generic error message\nGeneric iCloud error message",
@@ -1758,6 +1799,7 @@
       }
     },
     "미리보기": {
+      "comment": "Preview section",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1859,7 +1901,15 @@
       }
     },
     "백업 및 복원": {
-      "comment": "Backup and restore"
+      "comment": "Backup and restore",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup & Restore"
+          }
+        }
+      }
     },
     "백업 삭제": {
       "comment": "Delete backup button label\nDelete backup dialog title",
@@ -1945,6 +1995,7 @@
       }
     },
     "버튼 높이": {
+      "comment": "Button height label",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1955,6 +2006,7 @@
       }
     },
     "버튼 미리보기": {
+      "comment": "Button preview label",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1965,6 +2017,7 @@
       }
     },
     "버튼 크기": {
+      "comment": "Button size section",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2179,7 +2232,15 @@
       }
     },
     "사용 가이드": {
-      "comment": "User guide"
+      "comment": "User guide",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User Guide"
+          }
+        }
+      }
     },
     "사용 방법": {
       "comment": "How to use title",
@@ -2552,6 +2613,7 @@
       }
     },
     "실제 키보드에 적용된 크기로 표시됩니다.": {
+      "comment": "Preview description",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2584,7 +2646,15 @@
       }
     },
     "앱 내 폰트 크기": {
-      "comment": "App font size"
+      "comment": "App font size",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Font Size"
+          }
+        }
+      }
     },
     "앱 내 폰트 크기 변경": {
       "comment": "Change app font size",
@@ -2731,6 +2801,7 @@
       }
     },
     "열 개수": {
+      "comment": "Column count label\nColumn count picker\nColumn count section",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -2762,6 +2833,7 @@
       }
     },
     "예시 버튼": {
+      "comment": "Example button text",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3159,6 +3231,7 @@
       "comment": "Empty state question"
     },
     "작게": {
+      "comment": "Small size label",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3396,7 +3469,15 @@
       }
     },
     "정보": {
-      "comment": "Info section"
+      "comment": "Info section",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info"
+          }
+        }
+      }
     },
     "제목": {
       "localizations": {
@@ -3609,6 +3690,7 @@
       }
     },
     "크게": {
+      "comment": "Large size label",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3729,6 +3811,7 @@
       }
     },
     "클립키보드가 마음에 드셨나요? 여러분의 리뷰는 앱을 더 발전시키는 데 큰 도움이 됩니다.": {
+      "comment": "Review description",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3760,7 +3843,26 @@
       }
     },
     "키보드": {
-      "comment": "Keyboard section"
+      "comment": "Keyboard section",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard"
+          }
+        }
+      }
+    },
+    "키보드 레이아웃": {
+      "comment": "Keyboard layout",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard Layout"
+          }
+        }
+      }
     },
     "키보드 레이아웃 설정": {
       "comment": "Keyboard layout settings",
@@ -3810,7 +3912,15 @@
       }
     },
     "키보드 설정": {
-      "comment": "Keyboard settings"
+      "comment": "Keyboard settings",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keyboard Settings"
+          }
+        }
+      }
     },
     "키보드 입력 시 삽입되는 전체 문구를 작성해주세요": {
       "comment": "Insert content instruction",
@@ -3895,6 +4005,7 @@
       }
     },
     "키보드의 열 개수와 버튼 크기를 조정할 수 있습니다.": {
+      "comment": "Keyboard layout settings description",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -4331,6 +4442,7 @@
       "comment": "Name placeholder"
     },
     "화면에 표시될 버튼의 열 개수를 선택하세요. 열이 많을수록 더 많은 버튼을 한 눈에 볼 수 있습니다.": {
+      "comment": "Column count description",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -4358,28 +4470,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Activities"
-          }
-        }
-      }
-    },
-    "키보드 레이아웃": {
-      "comment": "Keyboard layout",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Keyboard Layout"
-          }
-        }
-      }
-    },
-    "%d열": {
-      "comment": "Column count value",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%d Columns"
           }
         }
       }
