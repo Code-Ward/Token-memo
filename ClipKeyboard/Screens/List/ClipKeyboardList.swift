@@ -52,6 +52,9 @@ struct ClipKeyboardList: View {
     // 플레이스홀더 관리 시트
     @State private var showPlaceholderManagementSheet = false
 
+    // 데이터 리프레시 트리거
+    @State private var refreshTrigger = UUID()
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -96,8 +99,8 @@ struct ClipKeyboardList: View {
                     EmptyListView
                 }
             }
-            .onAppear {
-                print("🔄 [ZStack] onAppear - 메모 리로드")
+            .task {
+                print("🔄 [task] 메모 리프레시")
                 loadMemos()
             }
             .toolbar {
