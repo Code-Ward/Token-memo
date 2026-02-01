@@ -355,7 +355,7 @@ struct ClipKeyboardList: View {
     private var toolbarButtons: some View {
         Button {
             HapticManager.shared.light()
-            withAnimation {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                 isSearchBarVisible.toggle()
                 if !isSearchBarVisible {
                     searchQueryString = ""
@@ -983,11 +983,15 @@ struct SheetModifiers: ViewModifier {
                         onComplete: onTemplateComplete,
                         onCancel: onTemplateCancel
                     )
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
                 }
             }
             // 플레이스홀더 관리 시트
             .sheet(isPresented: $showPlaceholderManagementSheet) {
                 PlaceholderManagementSheet(allMemos: tokenMemos)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
             // 템플릿 편집 시트
             .sheet(item: $selectedTemplateIdForSheet) { templateId in

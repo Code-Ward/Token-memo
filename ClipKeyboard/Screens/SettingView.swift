@@ -17,6 +17,7 @@ struct SettingView: View {
             // 키보드 섹션 (5개)
             Section(NSLocalizedString("키보드", comment: "Keyboard section")) {
                 Button {
+                    HapticManager.shared.light()
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
@@ -80,6 +81,7 @@ struct SettingView: View {
                 }
             }
         }
+        .listStyle(.grouped)
     }
 
     // 앱 버전 정보를 Info.plist에서 자동으로 가져오기

@@ -39,6 +39,7 @@ struct ReviewRequestView: View {
             // Action buttons
             HStack(spacing: 12) {
                 Button {
+                    HapticManager.shared.soft()
                     ReviewManager.shared.markReviewResponded()
                     dismiss()
                 } label: {
@@ -52,6 +53,7 @@ struct ReviewRequestView: View {
                 }
 
                 Button {
+                    HapticManager.shared.medium()
                     requestReview()
                     ReviewManager.shared.markReviewResponded()
                     // Dismiss after a short delay
