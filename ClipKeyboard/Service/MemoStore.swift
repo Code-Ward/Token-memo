@@ -60,9 +60,25 @@ class MemoStore: ObservableObject {
     }
     
     func save(memos: [Memo], type: MemoType) throws {
+        print("💾 [MemoStore.save] 저장 시작 - type: \(type), count: \(memos.count)")
         let data = try JSONEncoder().encode(memos)
-        guard let outfile = try Self.fileURL(type: type) else { return }
+        print("📦 [MemoStore.save] 인코딩 완료 - \(data.count) bytes")
+
+        guard let outfile = try Self.fileURL(type: type) else {
+            print("❌ [MemoStore.save] fileURL을 가져올 수 없음!")
+            return
+        }
+        print("📍 [MemoStore.save] 저장 경로: \(outfile.path)")
+
         try data.write(to: outfile)
+        print("✅ [MemoStore.save] 파일 쓰기 완료")
+
+        // 저장된 데이터 검증
+        if let verifyData = try? Data(contentsOf: outfile) {
+            print("✓ [MemoStore.save] 검증: 파일 크기 \(verifyData.count) bytes")
+        } else {
+            print("⚠️ [MemoStore.save] 검증 실패: 파일을 읽을 수 없음")
+        }
 
         // 데이터 변경 알림 전송 (자동 백업 트리거)
         NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
