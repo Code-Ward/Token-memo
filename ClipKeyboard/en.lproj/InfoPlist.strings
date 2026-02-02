@@ -1,0 +1,7 @@
+/*
+  InfoPlist.strings
+  Token memo (English)
+*/
+
+/* App display name */
+"CFBundleDisplayName" = "ClipKeyboard";

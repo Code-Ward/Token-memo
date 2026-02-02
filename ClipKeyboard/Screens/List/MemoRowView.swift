@@ -1,0 +1,108 @@
+//
+//  MemoRowView.swift
+//  Token memo
+//
+//  Created by Leeo on 12/11/25.
+//
+
+import SwiftUI
+
+// Separate view for memo row to reduce complexity
+struct MemoRowView: View {
+    let memo: Memo
+    let fontSize: CGFloat
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            // 카테고리 아이콘
+            categoryIcon
+                .font(.system(size: 20))
+                .foregroundColor(categoryColor)
+                .frame(width: 32, height: 32)
+                .background(categoryColor.opacity(0.15))
+                .cornerRadius(8)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(memo.title)
+                    .font(.system(size: fontSize))
+
+                HStack(spacing: 6) {
+                if memo.isSecure {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
+                }
+
+                if memo.isTemplate {
+                    Image(systemName: "doc.text.fill")
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
+                }
+                }
+            }
+
+            // 이미지 썸네일 (이미지 메모인 경우)
+            if (memo.contentType == .image || memo.contentType == .mixed),
+               let firstImageFileName = memo.imageFileNames.first {
+                #if os(iOS)
+                if let thumbnailImage = MemoStore.shared.loadImage(fileName: firstImageFileName) {
+                    Image(uiImage: thumbnailImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 50)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                }
+                #endif
+            }
+        }
+    }
+
+    /// 카테고리 아이콘
+    private var categoryIcon: Image {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return Image(systemName: type.icon)
+        }
+        return Image(systemName: "doc.text")
+    }
+
+    /// 카테고리 색상
+    private var categoryColor: Color {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return colorFor(type.color)
+        }
+        return .gray
+    }
+
+    /// 카테고리명을 다국어 지원 이름으로 변환
+    private func categoryLocalizedName(_ category: String) -> String {
+        // 카테고리가 ClipboardItemType의 rawValue와 일치하는지 확인
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == category }) {
+            return type.localizedName
+        }
+        // 일치하지 않으면 카테고리명을 그대로 번역 시도
+        return NSLocalizedString(category, comment: "Category name")
+    }
+
+    /// 색상 이름을 Color로 변환
+    private func colorFor(_ name: String) -> Color {
+        switch name {
+        case "blue": return .blue
+        case "green": return .green
+        case "purple": return .purple
+        case "orange": return .orange
+        case "red": return .red
+        case "indigo": return .indigo
+        case "brown": return .brown
+        case "cyan": return .cyan
+        case "teal": return .teal
+        case "pink": return .pink
+        case "mint": return .mint
+        case "yellow": return .yellow
+        default: return .gray
+        }
+    }
+}
