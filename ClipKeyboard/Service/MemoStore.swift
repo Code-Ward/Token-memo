@@ -60,9 +60,25 @@ class MemoStore: ObservableObject {
     }
     
     func save(memos: [Memo], type: MemoType) throws {
+        print("💾 [MemoStore.save] 저장 시작 - type: \(type), count: \(memos.count)")
         let data = try JSONEncoder().encode(memos)
-        guard let outfile = try Self.fileURL(type: type) else { return }
+        print("📦 [MemoStore.save] 인코딩 완료 - \(data.count) bytes")
+
+        guard let outfile = try Self.fileURL(type: type) else {
+            print("❌ [MemoStore.save] fileURL을 가져올 수 없음!")
+            return
+        }
+        print("📍 [MemoStore.save] 저장 경로: \(outfile.path)")
+
         try data.write(to: outfile)
+        print("✅ [MemoStore.save] 파일 쓰기 완료")
+
+        // 저장된 데이터 검증
+        if let verifyData = try? Data(contentsOf: outfile) {
+            print("✓ [MemoStore.save] 검증: 파일 크기 \(verifyData.count) bytes")
+        } else {
+            print("⚠️ [MemoStore.save] 검증 실패: 파일을 읽을 수 없음")
+        }
 
         // 데이터 변경 알림 전송 (자동 백업 트리거)
         NotificationCenter.default.post(name: NSNotification.Name("MemoDataChanged"), object: nil)
@@ -688,14 +704,15 @@ class ClipboardClassificationService {
         }
 
         // 각 타입별로 검사 (높은 신뢰도 & 구체적인 패턴부터)
-        if let result = detectRRN(trimmed) { return result }  // 주민등록번호 (매우 구체적)
-        if let result = detectBusinessNumber(trimmed) { return result }  // 사업자등록번호
+        // Korea-specific patterns removed for global categories
+        // if let result = detectRRN(trimmed) { return result }  // Removed: Korea-specific RRN
+        // if let result = detectBusinessNumber(trimmed) { return result }  // Removed: Korea-specific Business Number
         if let result = detectCreditCard(trimmed) { return result }
         if let result = detectEmail(trimmed) { return result }
         if let result = detectPhone(trimmed) { return result }
         if let result = detectURL(trimmed) { return result }
         if let result = detectPassportNumber(trimmed) { return result }
-        if let result = detectCustomsCode(trimmed) { return result }
+        if let result = detectDeclarationNumber(trimmed) { return result }
         if let result = detectVehiclePlate(trimmed) { return result }  // 차량번호
         if let result = detectIPAddress(trimmed) { return result }  // IP주소
         if let result = detectBirthDate(trimmed) { return result }  // 계좌번호보다 먼저!
@@ -902,12 +919,12 @@ class ClipboardClassificationService {
         return nil
     }
 
-    /// 통관고유부호 감지
-    private func detectCustomsCode(_ text: String) -> (ClipboardItemType, Double)? {
-        // P로 시작 + 12자리 숫자
-        let customsRegex = "^[Pp][0-9]{12}$"
-        if text.range(of: customsRegex, options: .regularExpression) != nil {
-            return (.customsCode, 0.95)
+    /// 신고번호 감지 (통관고유부호 등)
+    private func detectDeclarationNumber(_ text: String) -> (ClipboardItemType, Double)? {
+        // P로 시작 + 12자리 숫자 (통관고유부호)
+        let declarationRegex = "^[Pp][0-9]{12}$"
+        if text.range(of: declarationRegex, options: .regularExpression) != nil {
+            return (.declarationNumber, 0.95)
         }
 
         return nil
@@ -944,42 +961,48 @@ class ClipboardClassificationService {
         return nil
     }
 
-    /// 주민등록번호 감지
+    /// 주민등록번호 감지 - Removed for global categories
+    // Korea-specific pattern detection removed
+    /*
     private func detectRRN(_ text: String) -> (ClipboardItemType, Double)? {
         let cleaned = text.replacingOccurrences(of: "[^0-9-]", with: "", options: .regularExpression)
 
         // 패턴: YYMMDD-NNNNNNN (6자리-7자리)
         let rrnPattern = "^[0-9]{6}-[1-4][0-9]{6}$"
         if cleaned.range(of: rrnPattern, options: .regularExpression) != nil {
-            return (.rrn, 0.95)
+            return (.taxID, 0.95)
         }
 
         // 하이픈 없이: YYMMDDNNNNNNN (13자리, 7번째 자리가 1-4)
         let rrnNoHyphenPattern = "^[0-9]{6}[1-4][0-9]{6}$"
         if cleaned.range(of: rrnNoHyphenPattern, options: .regularExpression) != nil {
-            return (.rrn, 0.92)
+            return (.taxID, 0.92)
         }
 
         return nil
     }
+    */
 
-    /// 사업자등록번호 감지
+    /// 사업자등록번호 감지 - Removed for global categories
+    // Korea-specific pattern detection removed
+    /*
     private func detectBusinessNumber(_ text: String) -> (ClipboardItemType, Double)? {
         let cleaned = text.replacingOccurrences(of: "[^0-9-]", with: "", options: .regularExpression)
 
         // 패턴: XXX-XX-XXXXX (3자리-2자리-5자리)
         let businessPattern = "^[0-9]{3}-[0-9]{2}-[0-9]{5}$"
         if cleaned.range(of: businessPattern, options: .regularExpression) != nil {
-            return (.businessNumber, 0.95)
+            return (.insuranceNumber, 0.95)
         }
 
         // 하이픈 없이: 10자리
         if cleaned.range(of: "^[0-9]{10}$", options: .regularExpression) != nil {
-            return (.businessNumber, 0.85)
+            return (.insuranceNumber, 0.85)
         }
 
         return nil
     }
+    */
 
     /// 차량번호 감지 (한국)
     private func detectVehiclePlate(_ text: String) -> (ClipboardItemType, Double)? {

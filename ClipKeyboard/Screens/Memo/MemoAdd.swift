@@ -21,7 +21,6 @@ struct MemoAdd: View {
     @State private var keyword: String = ""
     @State private var value: String = ""
     @State private var showAlert: Bool = false
-    @State private var showSucessAlert: Bool = false
     @State private var attachedImages: [ImageWrapper] = [] // 첨부된 이미지들
 
     // 수정 모드용 초기값
@@ -204,8 +203,6 @@ struct MemoAdd: View {
                             return
                         }
 
-                        showSucessAlert = true
-                        // success
                         // save
                         do {
                             var loadedMemos:[Memo] = []
@@ -234,8 +231,21 @@ struct MemoAdd: View {
                                 contentType = .text
                             }
 
-                            // 카테고리 결정: 자동 분류가 있으면 우선 사용, 없으면 선택한 카테고리 사용
-                            let finalCategory = autoDetectedType?.rawValue ?? selectedCategory
+                            // 카테고리 결정: 사용자가 선택한 카테고리 우선 사용
+                            // 사용자가 기본값(텍스트)을 그대로 두었고 자동 분류 결과가 있으면 자동 분류 사용
+                            let finalCategory: String
+                            if selectedCategory == "텍스트" && autoDetectedType != nil && autoDetectedType != .text {
+                                // 기본값이고 자동 분류가 텍스트가 아니면 자동 분류 사용
+                                finalCategory = autoDetectedType!.rawValue
+                                print("🎨 [MemoAdd] 테마 - 기본값 사용 중 → 자동 분류 적용: '\(finalCategory)'")
+                            } else {
+                                // 사용자가 의도적으로 선택한 경우 사용자 선택 우선
+                                finalCategory = selectedCategory
+                                print("🎨 [MemoAdd] 테마 - 사용자 선택 우선: '\(finalCategory)' (자동 분류: '\(autoDetectedType?.rawValue ?? "없음")')")
+                            }
+
+                            // Update recently used categories
+                            updateRecentlyUsedCategories(finalCategory)
 
                             let finalMemoId: UUID
                             let finalMemoTitle: String
@@ -302,8 +312,17 @@ struct MemoAdd: View {
                                 }
                             }
 
+                            // 저장 완료 토스트
+                            toastMessage = NSLocalizedString("저장됨", comment: "Saved toast")
+                            showToast = true
+
+                            // 토스트 표시 후 화면 닫기
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                dismiss()
+                            }
+
                             // 적절한 타이밍에 리뷰 요청
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 ReviewManager.shared.requestReviewIfAppropriate()
                             }
                         } catch {
@@ -334,11 +353,6 @@ struct MemoAdd: View {
         }
         .alert(alertMessage, isPresented: $showAlert) {
 
-        }
-        .alert("저장되었습니다!", isPresented: $showSucessAlert) {
-            Button("Ok", role: .cancel) {
-                dismiss()
-            }
         }
         .overlay(
             Group {
@@ -428,7 +442,7 @@ struct MemoAdd: View {
                     selectedCategory = suggestedCategory
 
                     // 민감한 정보는 자동으로 보안 모드
-                    let sensitiveTypes: [ClipboardItemType] = [.creditCard, .bankAccount, .passportNumber, .rrn]
+                    let sensitiveTypes: [ClipboardItemType] = [.creditCard, .bankAccount, .passportNumber, .taxID]
                     isSecure = sensitiveTypes.contains(classification.type)
 
                     print("🔍 [MemoAdd] 자동 분류: \(classification.type.rawValue) → 테마: \(suggestedCategory)")
@@ -491,18 +505,30 @@ struct MemoAdd: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
+                    // Recently Used Section
+                    if !recentlyUsedCategories.isEmpty {
+                        // Recently Used Label
+                        Text("최근")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+
+                        ForEach(recentlyUsedCategories, id: \.self) { theme in
+                            themePillButton(theme: theme, showStar: true)
+                        }
+
+                        // Divider
+                        Divider()
+                            .frame(height: 28)
+                            .padding(.horizontal, 4)
+                    }
+
+                    // All Categories
                     ForEach(Constants.themes, id: \.self) { theme in
-                        Button {
-                            selectedCategory = theme
-                        } label: {
-                            Text(Constants.localizedThemeName(theme))
-                                .font(.callout)
-                                .fontWeight(selectedCategory == theme ? .semibold : .regular)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(selectedCategory == theme ? Color.accentColor : Color(.systemGray6))
-                                .foregroundColor(selectedCategory == theme ? .white : .primary)
-                                .cornerRadius(20)
+                        // Don't show in main list if already in recently used
+                        if !recentlyUsedCategories.contains(theme) {
+                            themePillButton(theme: theme, showStar: false)
                         }
                     }
                 }
@@ -512,6 +538,53 @@ struct MemoAdd: View {
         .padding(.horizontal, 16)
         .background(Color.accentColor.opacity(0.05))
         .cornerRadius(12)
+    }
+
+    // Helper view for theme pill button
+    @ViewBuilder
+    private func themePillButton(theme: String, showStar: Bool) -> some View {
+        Button {
+            selectedCategory = theme
+            updateRecentlyUsedCategories(theme)
+        } label: {
+            HStack(spacing: 4) {
+                if showStar {
+                    Image(systemName: "star.fill")
+                        .font(.caption2)
+                        .foregroundColor(selectedCategory == theme ? .white : .orange)
+                }
+                Text(Constants.localizedThemeName(theme))
+                    .font(.callout)
+                    .fontWeight(selectedCategory == theme ? .semibold : .regular)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(selectedCategory == theme ? Color.accentColor : Color(.systemGray6))
+            .foregroundColor(selectedCategory == theme ? .white : .primary)
+            .cornerRadius(20)
+        }
+    }
+
+    // Get recently used categories (max 5)
+    private var recentlyUsedCategories: [String] {
+        let recent = UserDefaults.standard.stringArray(forKey: "recentlyUsedCategories") ?? []
+        return Array(recent.prefix(5))
+    }
+
+    // Update recently used categories
+    private func updateRecentlyUsedCategories(_ category: String) {
+        var recent = UserDefaults.standard.stringArray(forKey: "recentlyUsedCategories") ?? []
+
+        // Remove if already exists
+        recent.removeAll { $0 == category }
+
+        // Add to front
+        recent.insert(category, at: 0)
+
+        // Keep only last 5
+        recent = Array(recent.prefix(5))
+
+        UserDefaults.standard.set(recent, forKey: "recentlyUsedCategories")
     }
 
     private var titleInputSection: some View {
@@ -1111,7 +1184,7 @@ struct MemoAdd: View {
         autoDetectedConfidence = ClipboardClassificationService.shared.classify(content: content).confidence
 
         // 민감한 정보는 자동으로 보안 모드
-        let sensitiveTypes: [ClipboardItemType] = [.creditCard, .bankAccount, .passportNumber, .rrn]
+        let sensitiveTypes: [ClipboardItemType] = [.creditCard, .bankAccount, .passportNumber, .taxID]
         isSecure = sensitiveTypes.contains(detectedType)
 
         // 제안 배너 숨기기
@@ -1489,14 +1562,19 @@ struct ContentInputSection: View {
         case .creditCard: return "1234-5678-9012-3456"
         case .bankAccount: return "123-456789-12-345"
         case .passportNumber: return "M12345678"
-        case .customsCode: return "P123456789012"
+        case .declarationNumber: return "P123456789012"
         case .postalCode: return "12345"
         case .name: return NSLocalizedString("홍길동", comment: "Name placeholder")
         case .birthDate: return "1990-01-01"
-        case .rrn: return "900101-1234567"
-        case .businessNumber: return "123-45-67890"
+        case .taxID: return "123-45-6789"
+        case .insuranceNumber: return "A12345678"
         case .vehiclePlate: return NSLocalizedString("12가1234", comment: "Vehicle plate placeholder")
         case .ipAddress: return "192.168.0.1"
+        case .membershipNumber: return "M123456"
+        case .trackingNumber: return "1Z999AA10123456784"
+        case .confirmationCode: return "ABC123XYZ"
+        case .medicalRecord: return "MR-2024-001"
+        case .employeeID: return "E12345"
         default: return NSLocalizedString("내용을 입력하세요", comment: "Default placeholder")
         }
     }
@@ -1508,7 +1586,7 @@ struct ContentInputSection: View {
 
         switch type {
         case .email: return .emailAddress
-        case .phone, .creditCard, .bankAccount, .postalCode, .rrn, .businessNumber: return .numberPad
+        case .phone, .creditCard, .bankAccount, .postalCode, .taxID, .insuranceNumber: return .numberPad
         case .ipAddress: return .decimalPad
         case .url: return .URL
         case .birthDate: return .numberPad

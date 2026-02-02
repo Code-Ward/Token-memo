@@ -25,13 +25,14 @@ class ReviewManager {
     private let appLaunchCountKey = "appLaunchCount"
     private let memoCreatedCountKey = "memoCreatedCountForReview"
     private let hasRequestedReviewKey = "hasRequestedReview"
+    private let hasRespondedToReviewKey = "hasRespondedToReview"
 
     // MARK: - Review Request Conditions
 
-    /// 리뷰 요청 최소 메모 생성 횟수
-    private let minimumMemoCount = 10
+    /// 리뷰 요청 최소 메모 생성 횟수 (Silent Partner 컨셉: 3개)
+    private let minimumMemoCount = 3
 
-    /// 리뷰 요청 최소 앱 실행 횟수
+    /// 리뷰 요청 최소 앱 실행 횟수 (Silent Partner 컨셉: 5회)
     private let minimumLaunchCount = 5
 
     /// 리뷰 요청 간격 (일)
@@ -51,6 +52,40 @@ class ReviewManager {
         let currentCount = UserDefaults.standard.integer(forKey: memoCreatedCountKey)
         UserDefaults.standard.set(currentCount + 1, forKey: memoCreatedCountKey)
         print("📊 [ReviewManager] 메모 생성 횟수: \(currentCount + 1)")
+    }
+
+    /// 리뷰 요청 시트를 표시할지 확인 (앱 실행 시 체크용)
+    /// - Returns: 리뷰 요청 시트 표시 여부
+    func shouldShowReview() -> Bool {
+        // 사용자가 이미 응답했으면 다시 표시하지 않음
+        let hasResponded = UserDefaults.standard.bool(forKey: hasRespondedToReviewKey)
+        guard !hasResponded else {
+            print("✅ [ReviewManager] 사용자가 이미 리뷰에 응답함")
+            return false
+        }
+
+        // 앱 실행 횟수 확인
+        let launchCount = UserDefaults.standard.integer(forKey: appLaunchCountKey)
+        guard launchCount >= minimumLaunchCount else {
+            print("🚀 [ReviewManager] 앱 실행 횟수 부족: \(launchCount)/\(minimumLaunchCount)")
+            return false
+        }
+
+        // 메모 개수 확인 (실제 저장된 메모 수)
+        let memoCount = (try? MemoStore.shared.load(type: .tokenMemo).count) ?? 0
+        guard memoCount >= minimumMemoCount else {
+            print("📝 [ReviewManager] 메모 개수 부족: \(memoCount)/\(minimumMemoCount)")
+            return false
+        }
+
+        print("⭐️ [ReviewManager] 리뷰 요청 조건 충족")
+        return true
+    }
+
+    /// 사용자가 리뷰 요청에 응답했음을 표시 (나중에/별점 남기기 모두 해당)
+    func markReviewResponded() {
+        UserDefaults.standard.set(true, forKey: hasRespondedToReviewKey)
+        print("✅ [ReviewManager] 리뷰 응답 완료 표시")
     }
 
     /// 리뷰 요청 조건을 확인하고, 조건이 충족되면 리뷰를 요청합니다.

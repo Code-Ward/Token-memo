@@ -14,57 +14,60 @@ struct SettingView: View {
     
     var body: some View {
         List {
-            Section(NSLocalizedString("앱 설정", comment: "App settings section")) {
-                NavigationLink(destination: ComboList()) {
-                    Label(NSLocalizedString("Combo 관리", comment: "Combo management"), systemImage: "arrow.triangle.2.circlepath.circle")
-                        .badge("NEW")
-                }
-
-                NavigationLink(destination: TutorialView()) {
-                    Text(NSLocalizedString("클립키보드 사용방법", comment: "ClipKeyboard tutorial"))
-                }
-
-                NavigationLink(destination: KeyboardTutorialView()) {
-                    Text(NSLocalizedString("FAQ", comment: "FAQ"))
-                }
-
-                NavigationLink(destination: FontSetting()) {
-                    Text(NSLocalizedString("앱 내 폰트 크기 변경", comment: "Change app font size"))
-                }
-
-                NavigationLink(destination: ThemeSettings()) {
-                    Text(NSLocalizedString("키보드 테마 설정", comment: "Keyboard theme settings"))
+            // 키보드 섹션 (5개)
+            Section(NSLocalizedString("키보드", comment: "Keyboard section")) {
+                Button {
+                    HapticManager.shared.light()
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    HStack {
+                        Text(NSLocalizedString("키보드 설정", comment: "Keyboard settings"))
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
 
                 NavigationLink(destination: KeyboardLayoutSettings()) {
-                    Label(NSLocalizedString("키보드 레이아웃 설정", comment: "Keyboard layout settings"), systemImage: "rectangle.grid.2x2")
-                        .badge("NEW")
+                    Text(NSLocalizedString("키보드 레이아웃", comment: "Keyboard layout"))
                 }
 
-                NavigationLink(destination: CopyPasteView()) {
-                    Text(NSLocalizedString("붙여넣기 알림 켜기/끄기", comment: "Paste notification toggle"))
+                NavigationLink(destination: ThemeSettings()) {
+                    Text(NSLocalizedString("키보드 테마", comment: "Keyboard theme"))
+                }
+
+                NavigationLink(destination: FontSetting()) {
+                    Text(NSLocalizedString("앱 내 폰트 크기", comment: "App font size"))
                 }
             }
 
-            Section(NSLocalizedString("데이터 관리", comment: "Data management section")) {
+            // 데이터 섹션 (2개)
+            Section(NSLocalizedString("데이터", comment: "Data section")) {
+                // iCloud 동기화는 CloudBackupView 안에 있다고 가정
                 NavigationLink(destination: CloudBackupView()) {
-                    Label(NSLocalizedString("iCloud 백업 및 복구", comment: "iCloud backup and restore"), systemImage: "icloud.and.arrow.up")
+                    Label(NSLocalizedString("백업 및 복원", comment: "Backup and restore"), systemImage: "icloud.and.arrow.up")
                 }
             }
 
-            Section(NSLocalizedString("통계 및 정보", comment: "Statistics and info section")) {
-                NavigationLink(destination: UsageStatistics()) {
-                    Label(NSLocalizedString("사용 통계", comment: "Usage statistics"), systemImage: "chart.bar.fill")
+            // 정보 섹션 (4개)
+            Section(NSLocalizedString("정보", comment: "Info section")) {
+                NavigationLink(destination: CopyPasteView()) {
+                    Text(NSLocalizedString("붙여넣기 알림 설정", comment: "Paste notification settings title"))
                 }
-            }
 
-            Section(NSLocalizedString("지원", comment: "Support section")) {
+                NavigationLink(destination: TutorialView()) {
+                    Text(NSLocalizedString("사용 가이드", comment: "User guide"))
+                }
+
                 NavigationLink(destination: ReviewWriteView()) {
-                    Label(NSLocalizedString("리뷰 및 평점 매기기", comment: "Write review"), systemImage: "star.fill")
+                    Text(NSLocalizedString("리뷰 남기기", comment: "Leave review"))
                 }
 
                 NavigationLink(destination: ContactView()) {
-                    Text(NSLocalizedString("개발자에게 연락하기", comment: "Contact developer"))
+                    Text(NSLocalizedString("문의하기", comment: "Contact"))
                 }
             }
 
@@ -78,6 +81,7 @@ struct SettingView: View {
                 }
             }
         }
+        .listStyle(.grouped)
     }
 
     // 앱 버전 정보를 Info.plist에서 자동으로 가져오기
@@ -229,11 +233,11 @@ struct ReviewWriteView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("⭐️ 리뷰 및 평점 매기기")
+                    Text(NSLocalizedString("⭐️ 리뷰 및 평점 매기기", comment: "Review and rating header"))
                         .font(.headline)
                         .padding(.bottom, 4)
 
-                    Text("클립키보드가 마음에 드셨나요? 여러분의 리뷰는 앱을 더 발전시키는 데 큰 도움이 됩니다.")
+                    Text(NSLocalizedString("클립키보드가 마음에 드셨나요? 여러분의 리뷰는 앱을 더 발전시키는 데 큰 도움이 됩니다.", comment: "Review description"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }

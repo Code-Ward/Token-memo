@@ -44,6 +44,7 @@
     },
     "'새로운 키보드 추가...' 를 탭하세요" : {
       "comment" : "Add Keyboard instruction 2",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -55,6 +56,7 @@
     },
     "'전체 액세스 허용'을 켜주세요" : {
       "comment" : "Full Access instruction 2",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -63,6 +65,9 @@
           }
         }
       }
+    },
+    "\"%@\"" : {
+
     },
     "(권장)" : {
       "comment" : "Recommended badge",
@@ -75,12 +80,34 @@
         }
       }
     },
+    "[%@] 이 복사되었습니다." : {
+      "comment" : "Copied toast message",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[%@] copied"
+          }
+        }
+      }
+    },
     "%@ 타입 없음" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No %@ type"
+          }
+        }
+      }
+    },
+    "%d열" : {
+      "comment" : "Column count option\nColumn count value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Columns"
           }
         }
       }
@@ -126,6 +153,7 @@
       }
     },
     "%lld개" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -169,6 +197,7 @@
       }
     },
     "%lld열" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -189,6 +218,7 @@
       }
     },
     "%lld회" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -290,6 +320,7 @@
       }
     },
     "⚙️ 키보드 레이아웃 설정" : {
+      "comment" : "Keyboard layout settings header",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -314,6 +345,7 @@
       "comment" : "Restore with data warning message"
     },
     "⭐️ 리뷰 및 평점 매기기" : {
+      "comment" : "Review and rating header",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -435,6 +467,9 @@
         }
       }
     },
+    "Clip Keyboard 선택" : {
+      "comment" : "Step 3"
+    },
     "Clipboard List" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -448,6 +483,7 @@
     },
     "ClipKeyboard 키보드 추가" : {
       "comment" : "Add Keyboard title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -491,6 +527,7 @@
     },
     "Combo 관리" : {
       "comment" : "Combo management",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -585,6 +622,7 @@
     },
     "FAQ" : {
       "comment" : "FAQ",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -607,6 +645,7 @@
     },
     "iCloud Drive가 활성화되어 있는지 확인해주세요. 설정 > [사용자 이름] > iCloud > iCloud Drive를 켜주세요." : {
       "comment" : "iCloud permission error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -616,8 +655,11 @@
         }
       }
     },
+    "iCloud Drive를 켜주세요." : {
+      "comment" : "iCloud permission error message"
+    },
     "iCloud 동기화" : {
-      "comment" : "Full Access reason 2\niCloud sync feature",
+      "comment" : "iCloud sync feature",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -640,6 +682,7 @@
     },
     "iCloud 백업 및 복구" : {
       "comment" : "iCloud backup and restore",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -662,6 +705,7 @@
     },
     "iCloud 서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요." : {
       "comment" : "iCloud server error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -671,8 +715,12 @@
         }
       }
     },
+    "iCloud 저장 공간이 부족합니다." : {
+      "comment" : "iCloud quota exceeded error message"
+    },
     "iCloud 저장 공간이 부족합니다. 설정 > [사용자 이름] > iCloud > 저장 공간 관리에서 확인해주세요." : {
       "comment" : "iCloud quota exceeded error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -703,6 +751,9 @@
           }
         }
       }
+    },
+    "iCloud에 로그인해주세요." : {
+      "comment" : "iCloud not authenticated error message"
     },
     "iCloud에서 데이터를 복구합니다" : {
       "comment" : "Restore button description",
@@ -750,6 +801,7 @@
     },
     "iPhone의 설정 앱을 실행하세요" : {
       "comment" : "Open Settings instruction 1",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -782,6 +834,7 @@
       }
     },
     "NEW" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -825,6 +878,7 @@
       }
     },
     "Ok" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1025,6 +1079,7 @@
     },
     "개발자에게 연락하기" : {
       "comment" : "Contact developer",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1156,6 +1211,7 @@
       }
     },
     "글자 크기" : {
+      "comment" : "Font size label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1207,6 +1263,7 @@
       }
     },
     "기본값으로 되돌리기" : {
+      "comment" : "Reset to defaults button",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1229,6 +1286,9 @@
           }
         }
       }
+    },
+    "나중에" : {
+      "comment" : "Later button"
     },
     "나중에 직접 추가할게요" : {
       "extractionState" : "stale",
@@ -1267,6 +1327,7 @@
     },
     "네트워크 연결을 확인하고 다시 시도해주세요." : {
       "comment" : "Network error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1275,6 +1336,9 @@
           }
         }
       }
+    },
+    "네트워크 연결을 확인해주세요." : {
+      "comment" : "Network error message"
     },
     "다른 앱에서 붙여넣기" : {
       "comment" : "Paste from other apps",
@@ -1289,6 +1353,7 @@
     },
     "다음" : {
       "comment" : "Next button",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1312,8 +1377,20 @@
         }
       }
     },
+    "데이터" : {
+      "comment" : "Data section",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        }
+      }
+    },
     "데이터 관리" : {
       "comment" : "Data management section",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1372,6 +1449,7 @@
     },
     "데이터를 준비하는 중 문제가 발생했습니다. 앱을 재시작하고 다시 시도해주세요." : {
       "comment" : "Data encoding failed error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1415,11 +1493,23 @@
       }
     },
     "레이아웃 설정" : {
+      "comment" : "Layout settings title",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Layout Settings"
+          }
+        }
+      }
+    },
+    "리뷰 남기기" : {
+      "comment" : "Leave review",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave a Review"
           }
         }
       }
@@ -1437,6 +1527,7 @@
     },
     "리뷰 및 평점 매기기" : {
       "comment" : "Write review",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1536,6 +1627,7 @@
     },
     "메모 붙여넣기" : {
       "comment" : "Paste memo title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1598,6 +1690,7 @@
       }
     },
     "메모별 통계" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1620,6 +1713,7 @@
     },
     "모든 준비가 완료되었습니다!" : {
       "comment" : "Setup complete message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1642,6 +1736,7 @@
     },
     "목록에서 ClipKeyboard를 찾아 선택하세요" : {
       "comment" : "Add Keyboard instruction 3",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1672,8 +1767,20 @@
         }
       }
     },
+    "문의하기" : {
+      "comment" : "Contact",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact"
+          }
+        }
+      }
+    },
     "문제가 발생했습니다. 네트워크 연결과 iCloud 상태를 확인하고 다시 시도해주세요." : {
       "comment" : "Generic error message\nGeneric iCloud error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1706,6 +1813,7 @@
       }
     },
     "미리보기" : {
+      "comment" : "Preview section",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1781,6 +1889,7 @@
     },
     "백업 데이터가 없습니다. 먼저 백업을 생성해주세요." : {
       "comment" : "No backup found error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1795,11 +1904,23 @@
     },
     "백업 데이터를 읽을 수 없습니다. 최신 버전의 앱을 사용하고 있는지 확인해주세요." : {
       "comment" : "Data decoding failed error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unable to read backup data. Please make sure you are using the latest version of the app."
+          }
+        }
+      }
+    },
+    "백업 및 복원" : {
+      "comment" : "Backup and restore",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup & Restore"
           }
         }
       }
@@ -1859,6 +1980,12 @@
         }
       }
     },
+    "백업을 읽을 수 없습니다. 앱을 업데이트해주세요." : {
+      "comment" : "Data decoding failed error message"
+    },
+    "백업이 없습니다." : {
+      "comment" : "No backup found error message"
+    },
     "백업하기" : {
       "comment" : "Backup button label",
       "localizations" : {
@@ -1882,6 +2009,7 @@
       }
     },
     "버튼 높이" : {
+      "comment" : "Button height label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1892,6 +2020,7 @@
       }
     },
     "버튼 미리보기" : {
+      "comment" : "Button preview label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1902,6 +2031,7 @@
       }
     },
     "버튼 크기" : {
+      "comment" : "Button size section",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1928,6 +2058,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Biometric authentication required to access secure memo"
+          }
+        }
+      }
+    },
+    "보험번호" : {
+      "comment" : "Insurance Number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insurance Number"
           }
         }
       }
@@ -2051,6 +2192,7 @@
     },
     "붙여넣기 알림 켜기/끄기" : {
       "comment" : "Paste notification toggle",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2093,8 +2235,20 @@
         }
       }
     },
+    "사번/학번" : {
+      "comment" : "Employee/Student ID",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Employee/Student ID"
+          }
+        }
+      }
+    },
     "사업자등록번호" : {
       "comment" : "Business Registration Number",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2114,8 +2268,20 @@
         }
       }
     },
+    "사용 가이드" : {
+      "comment" : "User guide",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User Guide"
+          }
+        }
+      }
+    },
     "사용 방법" : {
       "comment" : "How to use title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2138,6 +2304,7 @@
     },
     "사용 통계" : {
       "comment" : "Usage statistics",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2232,6 +2399,9 @@
         }
       }
     },
+    "새 키보드 추가" : {
+      "comment" : "Step 2"
+    },
     "새 토큰을 추가할까요?" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2285,6 +2455,9 @@
         }
       }
     },
+    "서버 문제. 잠시 후 다시 시도해주세요." : {
+      "comment" : "iCloud server error message"
+    },
     "서울시 강남구 테헤란로 123" : {
       "comment" : "Address placeholder"
     },
@@ -2331,6 +2504,9 @@
         }
       }
     },
+    "설정 > 키보드" : {
+      "comment" : "Step 1"
+    },
     "설정 경로" : {
       "comment" : "Settings path section header",
       "localizations" : {
@@ -2356,6 +2532,7 @@
     },
     "설정 앱을 열어주세요" : {
       "comment" : "Open Settings title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2366,7 +2543,7 @@
       }
     },
     "설정 열기" : {
-      "comment" : "Open Settings button",
+      "comment" : "Open settings button",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2397,6 +2574,17 @@
         }
       }
     },
+    "세금번호" : {
+      "comment" : "Tax ID",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tax ID"
+          }
+        }
+      }
+    },
     "손짓" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2404,6 +2592,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gestures"
+          }
+        }
+      }
+    },
+    "송장번호" : {
+      "comment" : "Tracking Number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracking Number"
           }
         }
       }
@@ -2473,6 +2672,7 @@
       }
     },
     "실제 키보드에 적용된 크기로 표시됩니다." : {
+      "comment" : "Preview description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2504,8 +2704,20 @@
         }
       }
     },
+    "앱 내 폰트 크기" : {
+      "comment" : "App font size",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Font Size"
+          }
+        }
+      }
+    },
     "앱 내 폰트 크기 변경" : {
       "comment" : "Change app font size",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2528,6 +2740,7 @@
     },
     "앱 설정" : {
       "comment" : "App settings section",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2647,6 +2860,7 @@
       }
     },
     "열 개수" : {
+      "comment" : "Column count label\nColumn count picker\nColumn count section",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2678,11 +2892,23 @@
       }
     },
     "예시 버튼" : {
+      "comment" : "Example button text",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Example Button"
+          }
+        }
+      }
+    },
+    "예약번호" : {
+      "comment" : "Confirmation Code",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmation Code"
           }
         }
       }
@@ -2697,6 +2923,9 @@
           }
         }
       }
+    },
+    "오류 발생. 네트워크와 iCloud를 확인해주세요." : {
+      "comment" : "Generic error message\nGeneric iCloud error message"
     },
     "온보딩 다시 보기" : {
       "extractionState" : "stale",
@@ -2742,8 +2971,12 @@
         }
       }
     },
+    "요청 초과. 잠시 후 다시 시도해주세요." : {
+      "comment" : "Rate limited error message"
+    },
     "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." : {
       "comment" : "Rate limited error message",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2942,6 +3175,7 @@
     },
     "이전" : {
       "comment" : "Previous button",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2963,6 +3197,7 @@
     },
     "일반 > 키보드 메뉴로 이동하세요" : {
       "comment" : "Open Settings instruction 2",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3064,7 +3299,19 @@
         }
       }
     },
+    "자주 치는 문장이 뭔가요?" : {
+      "comment" : "Empty state question",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you type often?"
+          }
+        }
+      }
+    },
     "작게" : {
+      "comment" : "Small size label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3095,18 +3342,12 @@
         }
       }
     },
-    "저장되었습니다!" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved!"
-          }
-        }
-      }
+    "저장 실패. 앱을 재시작해주세요." : {
+      "comment" : "Data encoding failed error message"
     },
     "저장된 메모 불러오기" : {
       "comment" : "Full Access reason 3",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3122,6 +3363,20 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saved Items"
+          }
+        }
+      }
+    },
+    "저장됨" : {
+      "comment" : "Saved toast"
+    },
+    "저장되었습니다!" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved!"
           }
         }
       }
@@ -3182,6 +3437,7 @@
       }
     },
     "전체 메모" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3204,6 +3460,7 @@
     },
     "전체 액세스 허용" : {
       "comment" : "Full Access title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3215,6 +3472,7 @@
     },
     "전체 액세스가 필요한 이유" : {
       "comment" : "Why Full Access title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3225,6 +3483,7 @@
       }
     },
     "전체 통계" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3279,11 +3538,23 @@
       }
     },
     "정렬" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sort"
+          }
+        }
+      }
+    },
+    "정보" : {
+      "comment" : "Info section",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info"
           }
         }
       }
@@ -3311,6 +3582,7 @@
     },
     "주민등록번호" : {
       "comment" : "Resident Registration Number",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3343,6 +3615,7 @@
     },
     "지구본 아이콘을 길게 눌러 ClipKeyboard를 선택하세요" : {
       "comment" : "Switch keyboard description",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3354,11 +3627,23 @@
     },
     "지원" : {
       "comment" : "Support section",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Support"
+          }
+        }
+      }
+    },
+    "진료기록번호" : {
+      "comment" : "Medical Record Number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medical Record"
           }
         }
       }
@@ -3374,6 +3659,17 @@
         }
       }
     },
+    "첫 클립 추가" : {
+      "comment" : "Add first clip button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Your First Clip"
+          }
+        }
+      }
+    },
     "초기화" : {
       "localizations" : {
         "en" : {
@@ -3385,6 +3681,7 @@
       }
     },
     "총 사용 횟수" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3394,8 +3691,12 @@
         }
       }
     },
+    "최근" : {
+
+    },
     "최근 복사한 내용을 언제든지 다시 사용할 수 있어요" : {
       "comment" : "Clipboard history description",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3492,6 +3793,7 @@
       }
     },
     "크게" : {
+      "comment" : "Large size label",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3546,6 +3848,7 @@
     },
     "클립보드 데이터 접근" : {
       "comment" : "Full Access reason 1",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3556,7 +3859,7 @@
       }
     },
     "클립보드 히스토리" : {
-      "comment" : "Clipboard history feature\nClipboard history title",
+      "comment" : "Clipboard history feature",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3600,6 +3903,7 @@
     },
     "클립키보드 사용방법" : {
       "comment" : "ClipKeyboard tutorial",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3610,6 +3914,7 @@
       }
     },
     "클립키보드가 마음에 드셨나요? 여러분의 리뷰는 앱을 더 발전시키는 데 큰 도움이 됩니다." : {
+      "comment" : "Review description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3640,8 +3945,31 @@
         }
       }
     },
+    "키보드" : {
+      "comment" : "Keyboard section",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard"
+          }
+        }
+      }
+    },
+    "키보드 레이아웃" : {
+      "comment" : "Keyboard layout",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard Layout"
+          }
+        }
+      }
+    },
     "키보드 레이아웃 설정" : {
       "comment" : "Keyboard layout settings",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3653,6 +3981,7 @@
     },
     "키보드 메뉴에서 '키보드' 탭을 선택하세요" : {
       "comment" : "Add Keyboard instruction 1",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3664,6 +3993,7 @@
     },
     "키보드 목록에서 ClipKeyboard를 탭하세요" : {
       "comment" : "Full Access instruction 1",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3684,6 +4014,17 @@
         }
       }
     },
+    "키보드 설정" : {
+      "comment" : "Keyboard settings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyboard Settings"
+          }
+        }
+      }
+    },
     "키보드 입력 시 삽입되는 전체 문구를 작성해주세요" : {
       "comment" : "Insert content instruction",
       "localizations" : {
@@ -3697,6 +4038,7 @@
     },
     "키보드 전환" : {
       "comment" : "Switch keyboard title",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3718,6 +4060,7 @@
       }
     },
     "키보드 테마" : {
+      "comment" : "Keyboard theme",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3729,6 +4072,7 @@
     },
     "키보드 테마 설정" : {
       "comment" : "Keyboard theme settings",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3737,6 +4081,9 @@
           }
         }
       }
+    },
+    "키보드를 추가해주세요" : {
+      "comment" : "Setup keyboard title"
     },
     "키보드에서 보여질 설명 문구" : {
       "localizations" : {
@@ -3750,6 +4097,7 @@
     },
     "키보드에서 저장된 메모를 선택하면 바로 입력돼요" : {
       "comment" : "Paste memo description",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3760,6 +4108,7 @@
       }
     },
     "키보드의 열 개수와 버튼 크기를 조정할 수 있습니다." : {
+      "comment" : "Keyboard layout settings description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3771,6 +4120,7 @@
     },
     "타사 키보드 섹션에서 찾을 수 있어요" : {
       "comment" : "Add Keyboard tip",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3842,6 +4192,7 @@
       }
     },
     "테마별 통계" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4009,6 +4360,7 @@
     },
     "통계 및 정보" : {
       "comment" : "Statistics and info section",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4019,22 +4371,12 @@
       }
     },
     "통관번호" : {
+      "comment" : "Declaration Number",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Customs Number"
-          }
-        }
-      }
-    },
-    "통관부호" : {
-      "comment" : "Customs Code",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Customs Code"
+            "value" : "Declaration Number"
           }
         }
       }
@@ -4193,6 +4535,7 @@
       "comment" : "Name placeholder"
     },
     "화면에 표시될 버튼의 열 개수를 선택하세요. 열이 많을수록 더 많은 버튼을 한 눈에 볼 수 있습니다." : {
+      "comment" : "Column count description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4213,6 +4556,17 @@
         }
       }
     },
+    "확인했습니다. 검토 후 답변드리겠습니다" : {
+      "comment" : "Empty state example 2",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it. Will review and get back to you"
+          }
+        }
+      }
+    },
     "활동" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4220,6 +4574,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activities"
+          }
+        }
+      }
+    },
+    "회원번호" : {
+      "comment" : "Membership Number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membership Number"
+          }
+        }
+      }
+    },
+    "회의가 10분 늦어질 것 같습니다" : {
+      "comment" : "Empty state example 1",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running 10 minutes late for the meeting"
           }
         }
       }

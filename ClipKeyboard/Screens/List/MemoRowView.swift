@@ -14,54 +14,30 @@ struct MemoRowView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
+            // 카테고리 아이콘
+            categoryIcon
+                .font(.system(size: 20))
+                .foregroundColor(categoryColor)
+                .frame(width: 32, height: 32)
+                .background(categoryColor.opacity(0.15))
+                .cornerRadius(8)
+
             VStack(alignment: .leading, spacing: 4) {
-                Label(memo.title,
-                      systemImage: memo.isChecked ? "checkmark.square.fill" : "doc.on.doc.fill")
-                .font(.system(size: fontSize))
+                Text(memo.title)
+                    .font(.system(size: fontSize))
 
-                HStack(spacing: 8) {
-                // 카테고리 표시 (category가 최종 확정된 값)
-                if let categoryType = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
-                    // category가 ClipboardItemType과 매치되면 아이콘과 함께 표시
-                    HStack(spacing: 4) {
-                        Image(systemName: categoryType.icon)
-                            .font(.caption2)
-                        Text(categoryType.localizedName)
-                            .font(.caption)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(colorFor(categoryType.color).opacity(0.2))
-                    .foregroundColor(colorFor(categoryType.color))
-                    .cornerRadius(8)
-                } else {
-                    // 일치하지 않으면 텍스트로만 표시
-                    Text(categoryLocalizedName(memo.category))
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .cornerRadius(8)
-                }
-
-                if memo.clipCount > 0 {
-                    Label("\(memo.clipCount)", systemImage: "chart.bar.fill")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-
+                HStack(spacing: 6) {
                 if memo.isSecure {
                     Image(systemName: "lock.fill")
-                        .font(.caption)
-                        .foregroundColor(.orange)
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
                 }
 
                 if memo.isTemplate {
                     Image(systemName: "doc.text.fill")
-                        .font(.caption)
-                        .foregroundColor(.purple)
+                        .font(.system(size: 9))
+                        .foregroundColor(.secondary)
                 }
-
                 }
             }
 
@@ -83,6 +59,22 @@ struct MemoRowView: View {
                 #endif
             }
         }
+    }
+
+    /// 카테고리 아이콘
+    private var categoryIcon: Image {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return Image(systemName: type.icon)
+        }
+        return Image(systemName: "doc.text")
+    }
+
+    /// 카테고리 색상
+    private var categoryColor: Color {
+        if let type = ClipboardItemType.allCases.first(where: { $0.rawValue == memo.category }) {
+            return colorFor(type.color)
+        }
+        return .gray
     }
 
     /// 카테고리명을 다국어 지원 이름으로 변환

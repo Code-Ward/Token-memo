@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct ClipKeyboardApp: App {
     @ObservedObject var manager = DataManager()
+    @State private var showReviewRequest = false
 
     init() {
         print("🚀 [APP INIT] ClipKeyboardApp 초기화 시작")
@@ -37,7 +38,20 @@ struct ClipKeyboardApp: App {
                     }
                     .onAppear() {
                         print("🎯 [APP BODY] 온보딩 완료 상태 -> ClipKeyboardList 표시")
+
+                        // TODO: Enable review request after adding ReviewRequestView to Xcode project
+                        // 리뷰 요청 체크 (1초 지연)
+                        // DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        //     if ReviewManager.shared.shouldShowReview() {
+                        //         showReviewRequest = true
+                        //     }
+                        // }
                     }
+                    // TODO: Add ReviewRequestView to Xcode project then uncomment
+                    // .sheet(isPresented: $showReviewRequest) {
+                    //     ReviewRequestView()
+                    //         .presentationDetents([.medium])
+                    // }
             } else {
                 // 온보딩
                 KeyboardSetupOnboardingView {
